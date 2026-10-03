@@ -741,6 +741,21 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--ring);
 }
+/* Keep autofilled fields dark (browsers paint them white/yellow). */
+.form-field input:-webkit-autofill,
+.form-field input:-webkit-autofill:hover,
+.form-field input:-webkit-autofill:focus,
+.form-field input:-webkit-autofill:active,
+.form-field textarea:-webkit-autofill,
+.form-field textarea:-webkit-autofill:hover,
+.form-field textarea:-webkit-autofill:focus,
+.form-field textarea:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-soft) inset;
+  box-shadow: 0 0 0 1000px var(--bg-soft) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
 /* Honeypot anti-spam field: visible to bots, never to humans. */
 .hp-field {
   position: absolute;
