@@ -124,13 +124,18 @@
   /* ---------- Contact form (sends via /api/contact on Vercel) ---------- */
   var form = doc.getElementById('contactForm');
   if (form) {
-    var status = doc.getElementById('cfStatus');
+    var toast = doc.getElementById('cfToast');
     var submitBtn = form.querySelector('button[type="submit"]');
+    var toastTimer = null;
 
-    function setStatus(text, kind) {
-      if (!status) return;
-      status.textContent = text;
-      status.className = 'form-status' + (kind ? ' ' + kind : '');
+    function showToast(text, kind) {
+      if (!toast) return;
+      if (toastTimer) window.clearTimeout(toastTimer);
+      toast.textContent = text;
+      toast.className = 'toast show' + (kind ? ' ' + kind : '');
+      toastTimer = window.setTimeout(function () {
+        toast.className = 'toast';
+      }, 4500);
     }
 
     form.addEventListener('submit', function (e) {
@@ -140,11 +145,11 @@
       var message = doc.getElementById('cfMessage').value.trim();
       var honeypot = doc.getElementById('cfWebsite');
       if (!name || !email || !message) {
-        setStatus('Please fill in your name, email, and message.', 'error');
+        showToast('Please fill in your name, email, and message.', 'error');
         return;
       }
       if (submitBtn) submitBtn.disabled = true;
-      setStatus('Sending your message...', 'sending');
+      showToast('Sending your message...');
 
       fetch('/api/contact', {
         method: 'POST',
@@ -163,10 +168,10 @@
         })
         .then(function (result) {
           if (result.status >= 200 && result.status < 300 && result.data.ok) {
-            setStatus('Message sent! Thank you for reaching out. Please check your inbox for a confirmation email.', 'success');
+            showToast('Message sent! Thank you for reaching out.', 'success');
             form.reset();
           } else {
-            setStatus(
+            showToast(
               result.data.error || 'Could not send your message. Please try again later.',
               'error'
             );
@@ -174,7 +179,7 @@
           if (submitBtn) submitBtn.disabled = false;
         })
         .catch(function () {
-          setStatus('Network error. Please check your connection and try again.', 'error');
+          showToast('Network error. Please check your connection and try again.', 'error');
           if (submitBtn) submitBtn.disabled = false;
         });
     });

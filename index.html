@@ -282,13 +282,11 @@
           </div>
 
           <p>
-            An IoT web-based solar energy site pre-assessment and billing system with mobile
-            application built for Salfer Engineering and Solar Technology Enterprises, designed
-            to streamline site assessments, project monitoring, and billing through organized
-            records and transparent updates. This system combines a React web application and
-            a Flutter mobile app on a shared Node.js, Express, and MongoDB backend with REST
-            API integration to deliver accurate assessments and efficient client communication,
-            offering a seamless experience for staff and customers.
+            A web and mobile system built for Salfer Engineering that helps manage solar
+            site assessments, project monitoring, and billing in one place, so records stay
+            organized and clients get clear updates. It has a React web app for the office
+            and a Flutter mobile app for customers and staff, both running on the same
+            Node.js, Express, and MongoDB backend with REST API.
           </p>
 
           <div class="stack">
@@ -448,7 +446,7 @@
           <div class="stack">
             <span class="chip">C#</span>
             <span class="chip">WinForms</span>
-            <span class="chip">Visual Studio</span>
+            <span class="chip">Visual Studio IDE</span>
             <span class="chip">MySQL</span>
           </div>
 
@@ -589,8 +587,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
           Send Message
         </button>
-        <p class="form-status" id="cfStatus" role="status" aria-live="polite"></p>
-        <p class="form-note">I usually reply within a day or two.</p>
       </form>
     </div>
   </div>
@@ -613,10 +609,6 @@
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.4 2H3.6A1.6 1.6 0 0 0 2 3.6v16.8A1.6 1.6 0 0 0 3.6 22h16.8a1.6 1.6 0 0 0 1.6-1.6V3.6A1.6 1.6 0 0 0 20.4 2zM8.1 18.7H5.2V9.4h2.9zM6.6 8.1a1.7 1.7 0 1 1 1.7-1.7 1.7 1.7 0 0 1-1.7 1.7zm12.1 10.6h-2.9v-4.5c0-1.1 0-2.5-1.5-2.5s-1.8 1.2-1.8 2.4v4.6h-2.9V9.4h2.8v1.2h.1a3.1 3.1 0 0 1 2.8-1.5c3 0 3.5 1.9 3.5 4.5z"/></svg>
         LinkedIn
       </a>
-      <a href="mailto:padillacarlosnino.pdm@gmail.com">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
-        Email
-      </a>
       <a href="resume.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h3"/></svg>
         Résumé
@@ -628,6 +620,8 @@
 <button class="to-top" id="toTop" type="button" aria-label="Back to top">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
+
+<div class="toast" id="cfToast" role="status" aria-live="polite"></div>
 
 <script src="js/main.js"></script>
 </body>

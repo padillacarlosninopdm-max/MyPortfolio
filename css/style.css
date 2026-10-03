@@ -741,12 +741,6 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--ring);
 }
-.form-note {
-  margin: 0;
-  font-size: 0.82rem;
-  color: var(--ink-mute);
-  text-align: center;
-}
 /* Honeypot anti-spam field: visible to bots, never to humans. */
 .hp-field {
   position: absolute;
@@ -755,23 +749,35 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   height: 1px;
   overflow: hidden;
 }
-.form-status {
-  margin: 0;
+/* ---------- Toast notification (bottom-left) ---------- */
+.toast {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 95;
+  max-width: min(360px, calc(100vw - 44px));
+  padding: 13px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  color: var(--ink);
   font-size: 0.88rem;
-  text-align: center;
-  min-height: 1.4em;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
 }
-.form-status:empty {
-  display: none;
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
-.form-status.sending {
-  color: var(--ink-soft);
+.toast.success {
+  border-color: #4ade80;
 }
-.form-status.success {
-  color: #4ade80;
-}
-.form-status.error {
-  color: #f87171;
+.toast.error {
+  border-color: #f87171;
 }
 .contact-form .btn[disabled] {
   opacity: 0.6;
