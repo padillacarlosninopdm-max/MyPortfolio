@@ -1,0 +1,233 @@
+/* ==========================================================================
+   Résumé / CV — A4 print layout
+   Self-contained on purpose: nothing here depends on the portfolio stylesheet,
+   so the print output is identical no matter how index.html changes.
+   ========================================================================== */
+
+:root {
+  --ink: #14181f;
+  --ink-soft: #3f4756;
+  --ink-mute: #6b7488;
+  --line: #d7dde6;
+  --primary: #1e40af;
+  --accent: #b45309;
+  --ph-bg: #fffbeb;
+  --ph-line: #f59e0b;
+  --ph-ink: #b45309;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: #eceff4;
+  color: var(--ink);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: "Sora", "Segoe UI", system-ui, sans-serif;
+  margin: 0;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
+}
+
+/* Placeholder token — same idea as index.html, deliberately visible. */
+.ph {
+  background: var(--ph-bg);
+  border-bottom: 1px dashed var(--ph-line);
+  color: var(--ph-ink);
+  font-style: italic;
+  padding: 0 2px;
+}
+.ph::before { content: "["; }
+.ph::after  { content: "]"; }
+
+/* ---------- Page ---------- */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 24px auto;
+  padding: 14mm 15mm;
+  background: #fff;
+  box-shadow: 0 10px 40px -12px rgba(10, 15, 28, 0.35);
+}
+
+/* ---------- Masthead ---------- */
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 7mm;
+  padding-bottom: 5mm;
+  border-bottom: 2.5px solid var(--ink);
+}
+.masthead img {
+  width: 26mm;
+  height: 26mm;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 22%;
+  flex: none;
+}
+.masthead-centered {
+  justify-content: center;
+  text-align: center;
+}
+.masthead-centered .contact { justify-content: center; }
+.masthead h1 { font-size: 22pt; font-weight: 800; letter-spacing: -0.02em; }
+.masthead .contact {
+  margin-top: 3mm;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2mm 5mm;
+  font-size: 8.6pt;
+  color: var(--ink-soft);
+}
+.masthead .contact span { display: inline-flex; align-items: center; gap: 1.6mm; }
+.masthead .contact a { color: inherit; text-decoration: none; }
+.masthead .contact a:hover { color: var(--primary); text-decoration: underline; }
+.masthead .contact svg { width: 3.4mm; height: 3.4mm; color: var(--primary); flex: none; }
+
+/* ---------- Sections ---------- */
+section { margin-top: 6mm; break-inside: avoid; }
+section.break { break-inside: auto; }
+
+h2.section-title {
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--primary);
+  padding-bottom: 1.4mm;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 3mm;
+}
+
+p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
+
+/* ---------- Education ---------- */
+.edu { display: grid; gap: 3mm; }
+.edu-item { display: grid; grid-template-columns: 26mm 1fr; gap: 4mm; align-items: baseline; }
+.edu-item.edu-single { grid-template-columns: 1fr; }
+.edu-item .when { font-size: 8.6pt; font-weight: 600; color: var(--ink-mute); }
+.edu-item b { display: block; font-size: 10.5pt; }
+.edu-item .degree { color: var(--ink-soft); font-size: 9.4pt; }
+
+/* ---------- Skills ---------- */
+.skill-line { display: grid; grid-template-columns: 34mm 1fr; gap: 4mm; margin-bottom: 1.6mm; font-size: 9.6pt; }
+.skill-line b { color: var(--ink); font-weight: 600; }
+.skill-line span { color: var(--ink-soft); }
+.skill-line .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 9pt; }
+
+/* ---------- Projects ---------- */
+.job { margin-bottom: 4mm; break-inside: avoid; }
+.job:last-child { margin-bottom: 0; }
+.job-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
+.job-head b { font-size: 10.4pt; }
+.job-head .kind { font-size: 8.6pt; color: var(--ink-mute); font-weight: 600; white-space: nowrap; }
+.job ul { margin: 1.4mm 0 0; padding-left: 4.4mm; }
+.job li { margin-bottom: 1.1mm; color: var(--ink-soft); font-size: 9.4pt; text-align: justify; }
+.job li b { color: var(--ink); }
+.job .stack { margin-top: 1.4mm; font-size: 8.8pt; color: var(--ink-mute); }
+.job .stack b { color: var(--ink-soft); font-weight: 600; }
+
+/* ---------- Lists ---------- */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.6mm 8mm;
+}
+.tick-list { list-style: none; margin: 0; padding: 0; font-size: 9.4pt; color: var(--ink-soft); text-align: justify; }
+.tick-list li { padding-left: 4.6mm; position: relative; margin-bottom: 1.1mm; }
+.tick-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.5mm;
+  width: 2mm;
+  height: 2mm;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.footer-note {
+  margin-top: 6mm;
+  padding-top: 3mm;
+  border-top: 1px solid var(--line);
+  font-size: 8pt;
+  color: var(--ink-mute);
+  text-align: center;
+}
+
+/* ---------- Screen-only controls ---------- */
+.toolbar {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+}
+.toolbar button,
+.toolbar a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: 600 0.82rem/1 "Inter", sans-serif;
+  text-decoration: none;
+  box-shadow: 0 4px 14px -6px rgba(10, 15, 28, 0.4);
+  cursor: pointer;
+}
+.toolbar button:hover,
+.toolbar a:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+.toolbar svg { width: 15px; height: 15px; }
+
+@media (max-width: 220mm) {
+  .page { width: 100%; margin: 0; padding: 8mm 7mm; box-shadow: none; }
+}
+
+/* ---------- Print ---------- */
+@page { size: A4; margin: 0; }
+
+@media print {
+  body { background: #fff; font-size: 9.5pt; }
+  .toolbar { display: none !important; }
+  .page {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 9mm 11mm;
+    box-shadow: none;
+  }
+  .masthead { padding-bottom: 3mm; gap: 5mm; }
+  .masthead h1 { font-size: 20pt; }
+  .masthead .contact { margin-top: 2mm; }
+  section { margin-top: 3.5mm; }
+  h2.section-title { margin-bottom: 2mm; padding-bottom: 1mm; }
+  p { margin: 0 0 1.6mm; }
+  .skill-line { margin-bottom: 1mm; }
+  .job { margin-bottom: 2.2mm; }
+  .job ul { margin: 1mm 0 0; }
+  .job li { margin-bottom: 0.6mm; font-size: 9pt; }
+  .job .stack { margin-top: 1mm; }
+  .tick-list li { margin-bottom: 0.6mm; }
+  .footer-note { margin-top: 3mm; padding-top: 2mm; }
+  .job-head b { font-size: 9.6pt; }
+  .job-head { gap: 3mm; }
+  .ph {
+    background: transparent !important;
+    border-bottom: 1px dashed #999 !important;
+    color: #666 !important;
+  }
+  a { color: inherit; text-decoration: none; }
+}
