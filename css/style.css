@@ -1131,25 +1131,62 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   .showcase-dual .showcase-mobile-half {
     border-left: none;
     border-top: 1px solid var(--border);
+    padding: 56px 22px 36px;
   }
   .showcase {
     grid-template-columns: 1fr;
     gap: 30px;
     padding: 36px 22px 32px;
   }
-  /* No fanning on narrow screens - rotated, overlapping cards get clipped. */
+  /* No fanning on narrow screens - rotated, overlapping cards get clipped.
+     Stack phones in a single centered column with equal widths so all
+     three cards align. */
   .shot-left .shot-frame, .shot-right .shot-frame,
   .shot-center .shot-frame, .shot:hover .shot-frame,
   .showcase-phones .shot-left .shot-frame,
   .showcase-phones .shot-right .shot-frame,
   .showcase-phones .shot-center .shot-frame,
-  .showcase-phones .shot:hover .shot-frame { transform: none; }
+  .showcase-phones .shot:hover .shot-frame,
+  .showcase-dual .showcase-mobile-half .shot-left .shot-frame,
+  .showcase-dual .showcase-mobile-half .shot-right .shot-frame,
+  .showcase-dual .showcase-mobile-half .shot-center .shot-frame { transform: none; }
+  .showcase-phones,
+  .showcase-dual .showcase-mobile-half {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 28px;
+  }
   .showcase .shot + .shot,
   .showcase .shot-center,
   .showcase-phones .shot + .shot,
-  .showcase-phones .shot-center { margin-left: 0; }
-  .showcase-phones { display: grid; }
-  .showcase-phones .shot { width: auto; max-width: 250px; margin-inline: auto; }
+  .showcase-phones .shot-center { margin-left: 0; margin-right: 0; }
+  .showcase-phones .shot,
+  .showcase-phones .shot-center,
+  .showcase-dual .showcase-mobile-half .shot,
+  .showcase-dual .showcase-mobile-half .shot-center {
+    width: min(280px, 100%);
+    max-width: 280px;
+    flex: none;
+    margin: 0 auto;
+  }
+  /* Force identical image boxes so captions line up even if the source
+     screenshots differ by a few pixels in height. */
+  .showcase-phones .shot-frame img,
+  .showcase-dual .showcase-mobile-half .shot-frame img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 700 / 1415;
+    object-fit: cover;
+  }
+  /* The dual-half rules above have higher specificity, so they would keep
+     the fan margins and fixed phone widths on narrow screens - reset them. */
+  .showcase-dual .showcase-web-half .shot + .shot,
+  .showcase-dual .showcase-web-half .shot-center,
+  .showcase-dual .showcase-mobile-half .shot + .shot,
+  .showcase-dual .showcase-mobile-half .shot-center { margin-left: 0; margin-right: 0; }
+  .showcase-dual .shot figcaption { white-space: normal; }
   .shot-center .shot-frame {
     border-color: var(--primary);
     box-shadow: 0 30px 60px -26px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--primary);
