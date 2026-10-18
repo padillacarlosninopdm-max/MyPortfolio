@@ -68,6 +68,8 @@
     var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     var recognition = null;
     var listening = false;
+    var suppressAutoSend = false;
+    var hadError = false;
 
     if (!SpeechRec) {
       micBtn.remove();
@@ -94,6 +96,7 @@
       };
 
       recognition.onerror = function (e) {
+        if (e.error !== 'aborted') hadError = true;
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           addBubble('assistant', 'Microphone access was blocked. Please allow mic permission in your browser settings.');
         } else if (e.error !== 'aborted' && e.error !== 'no-speech') {
@@ -106,6 +109,20 @@
         micBtn.classList.remove('listening');
         micBtn.setAttribute('aria-pressed', 'false');
         micBtn.setAttribute('aria-label', 'Start voice input');
+
+        var shouldSend = !suppressAutoSend && !hadError && !busy &&
+          panel.classList.contains('open') && input.value.trim() !== '';
+        suppressAutoSend = false;
+
+        if (shouldSend) {
+          if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+          } else {
+            form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }
+          return;
+        }
+
         if (panel.classList.contains('open')) input.focus();
       };
 
@@ -115,6 +132,7 @@
           recognition.stop();
           return;
         }
+        hadError = false;
         try {
           recognition.start();
         } catch (err) {
@@ -124,7 +142,10 @@
     }
 
     function stopListening() {
-      if (recognition && listening) recognition.stop();
+      if (recognition && listening) {
+        suppressAutoSend = true;
+        recognition.stop();
+      }
     }
 
     /* Known bare domains the assistant may mention without the https:// prefix. */
