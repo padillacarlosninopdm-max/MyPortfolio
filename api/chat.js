@@ -40,7 +40,8 @@ var SYSTEM_PROMPT =
   'If the visitor asks you to compose, create, or write a sentence or paragraph about any topic, ' +
   'write the draft directly in your reply as plain text, then ask whether they want you to email it to Carlos. ' +
   'Do not call any tool yet at that point. Only after the visitor explicitly confirms (for example "yes", "send it", "email it"), ' +
-  'call the send_composed_text tool with subject set to the topic and content set to the exact draft you just showed. ' +
+  'collect the visitor name and email if you do not already have them; if either is missing, ask for them before sending. ' +
+  'Then call the send_composed_text tool with name, email, subject set to the topic, and content set to the exact draft you just showed. ' +
   'After it succeeds, confirm that the email was sent to Carlos. ' +
   'If the visitor asks to send composed text to an email address other than Carlos, explain that you can only email Carlos. ' +
   'Be concise, friendly, and professional. Reply in plain text only, no markdown formatting such as **bold**, ' +
@@ -103,12 +104,17 @@ function autoReplyHtml(name) {
   );
 }
 
-function composedTextHtml(subject, content) {
+function composedTextHtml(name, email, subject, content) {
+  var safeName = escapeHtml(name);
+  var safeEmail = escapeHtml(email);
   var safeSubject = escapeHtml(subject).replace(/\n/g, ' ');
   var safeContent = escapeHtml(content).replace(/\n/g, '<br>');
   return emailShell(
     '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">AI COMPOSED TEXT</p>' +
     '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">' + safeSubject + '</h2>' +
+    '<p style="margin:0 0 6px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">From:</strong> ' + safeName + '</p>' +
+    '<p style="margin:0 0 16px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">Email:</strong> ' +
+    '<a href="mailto:' + safeEmail + '" style="color:#60a5fa;">' + safeEmail + '</a></p>' +
     '<div style="background-color:#0a1020;border:1px solid #1f2b45;border-radius:8px;padding:16px;">' +
     '<p style="margin:0;font-size:14px;line-height:1.65;color:#e9eff9;">' + safeContent + '</p>' +
     '</div>'
@@ -181,20 +187,23 @@ async function sendComposedText(args) {
   var brevoKey = process.env.BREVO_API_KEY;
   if (!brevoKey) return { ok: false, error: 'Email service is not configured.' };
 
+  var name = String((args && args.name) || '').trim().slice(0, 100);
+  var email = String((args && args.email) || '').trim().slice(0, 254);
   var subject = String((args && args.subject) || '').trim().slice(0, 200);
   var content = String((args && args.content) || '').trim().slice(0, 5000);
 
-  if (!subject || !content) {
-    return { ok: false, error: 'Missing subject or content.' };
+  if (!name || !isEmail(email) || !subject || !content) {
+    return { ok: false, error: 'Missing or invalid name, email, subject, or content.' };
   }
 
   try {
     await sendEmail(brevoKey, {
       sender: { name: OWNER_NAME, email: OWNER_EMAIL },
       to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
+      replyTo: { email: email, name: name },
       subject: 'AI-composed text: ' + subject,
-      htmlContent: composedTextHtml(subject, content),
-      textContent: 'Subject: ' + subject + '\\n\\n' + content
+      htmlContent: composedTextHtml(name, email, subject, content),
+      textContent: 'From: ' + name + ' <' + email + '>\nSubject: ' + subject + '\n\n' + content
     });
     return { ok: true };
   } catch (err) {
@@ -239,18 +248,20 @@ if (process.env.BREVO_API_KEY) {
     }
   });
 
-  tools.push({
+    tools.push({
     type: 'function',
     function: {
       name: 'send_composed_text',
-      description: 'Email AI-composed text (a sentence or paragraph you wrote) to Carlos. Use ONLY after the visitor asked you to compose text about a topic AND then explicitly confirmed to send it (for example: "yes", "send it", "email it"). Never call before confirmation. Recipient is always Carlos.',
+      description: 'Email AI-composed text (a sentence or paragraph you wrote) to Carlos. Use ONLY after the visitor asked you to compose text about a topic AND then explicitly confirmed to send it (for example: "yes", "send it", "email it"). Before calling, collect the visitor name and email; if either is missing, ask for them first. Never call before confirmation. Recipient is always Carlos.',
       parameters: {
         type: 'object',
         properties: {
+          name: { type: 'string', description: 'Visitor name' },
+          email: { type: 'string', description: 'Visitor email' },
           subject: { type: 'string', description: 'Short subject or topic of the composed text' },
           content: { type: 'string', description: 'The exact composed text to email' }
         },
-        required: ['subject', 'content']
+        required: ['name', 'email', 'subject', 'content']
       }
     }
   });
