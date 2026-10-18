@@ -54,10 +54,27 @@
     var history = [];
     var busy = false;
 
+    /* Known bare domains the assistant may mention without the https:// prefix. */
+    var BARE_LINK = '\\b(?:www\\.)?(?:github\\.com|linkedin\\.com|solarisiot\\.com|rentahanan\\.vercel\\.app|myportfolio-psi-three-54\\.vercel\\.app)\\/[^\\s<"\']+';
+
+    function linkify(escaped) {
+      var re = new RegExp('(https?:\\/\\/[^\\s<"\']+)|(' + BARE_LINK + ')', 'g');
+      return escaped.replace(re, function (match, full, bare) {
+        var url = full || ('https://' + bare);
+        var trail = '';
+        var m = url.match(/[.,;:!?]+$/);
+        if (m) {
+          trail = m[0];
+          url = url.slice(0, -trail.length);
+        }
+        return '<a class="chat-link" href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + trail;
+      });
+    }
+
     function addBubble(role, text) {
       var bubble = doc.createElement('div');
       bubble.className = 'chat-bubble chat-' + role;
-      bubble.innerHTML = escapeHtml(text)
+      bubble.innerHTML = linkify(escapeHtml(text))
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*/g, '')
         .replace(/\n/g, '<br>');
