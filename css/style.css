@@ -1299,6 +1299,11 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   color: var(--ink);
   border: 1px solid var(--border);
 }
+.chat-link {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
 .chat-typing { display: inline-flex; align-items: center; gap: 4px; min-height: 18px; }
 .typing-dot {
   width: 7px; height: 7px; border-radius: 50%;

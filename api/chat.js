@@ -8,6 +8,12 @@ var BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
 var OWNER_EMAIL = 'padillacarlosnino.pdm@gmail.com';
 var OWNER_NAME = 'Carlos Nino Q. Padilla';
 
+/* Whitelisted project sites the chatbot may open for the visitor. */
+var SITES = {
+  rentahanan: { url: 'https://rentahanan.vercel.app/', label: 'Rentahanan' },
+  solaris: { url: 'https://www.solarisiot.com/', label: 'Solaris' }
+};
+
 var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
   'Contact details: phone 09553764958; email padillacarlosnino.pdm@gmail.com; ' +
@@ -25,6 +31,10 @@ var SYSTEM_PROMPT =
   '3) Celevation - LAN-based event management system; C# WinForms, MySQL/MariaDB. Team project: mostly front end with minor backend, plus QA. ' +
   'Seminars: Learn AI and ChatGPT (DICT, 2026); Build Your Future with AI (PDM College of Computer Studies CSS, 2026); ' +
   'Git Happens (PDM CSS/CS Department, 2026). No certifications are listed yet. ' +
+  'Project websites: Rentahanan at https://rentahanan.vercel.app/ and Solaris at https://www.solarisiot.com/. ' +
+  'If the visitor asks to open, view, show, or be redirected to the Rentahanan or Solaris website, ' +
+  'call the open_website tool with the matching site; it opens in a new tab on their browser. ' +
+  'Confirm briefly, for example: Opening the Solaris website in a new tab. ' +
   'If the visitor explicitly asks to send a message to Carlos, use the send_message_to_carlos tool. ' +
   'Collect the visitor name, email, and message first; if any are missing, ask for them. Never send without explicit request. ' +
   'Be concise, friendly, and professional. Reply in plain text only, no markdown formatting such as **bold**, ' +
@@ -145,22 +155,43 @@ async function sendToCarlos(args) {
   }
 }
 
-var tools = process.env.BREVO_API_KEY ? [{
+var tools = [{
   type: 'function',
   function: {
-    name: 'send_message_to_carlos',
-    description: 'Send a message from the website visitor to Carlos Padilla by email. Use only when the visitor explicitly asks to send or contact Carlos and has provided name, email, and message.',
+    name: 'open_website',
+    description: 'Open a project website in a new browser tab for the visitor. Use when the visitor asks to open, view, show, or be redirected to a project website.',
     parameters: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Visitor name' },
-        email: { type: 'string', description: 'Visitor email' },
-        message: { type: 'string', description: 'Message to send' }
+        site: {
+          type: 'string',
+          enum: ['rentahanan', 'solaris'],
+          description: 'Which project website to open'
+        }
       },
-      required: ['name', 'email', 'message']
+      required: ['site']
     }
   }
-}] : [];
+}];
+
+if (process.env.BREVO_API_KEY) {
+  tools.push({
+    type: 'function',
+    function: {
+      name: 'send_message_to_carlos',
+      description: 'Send a message from the website visitor to Carlos Padilla by email. Use only when the visitor explicitly asks to send or contact Carlos and has provided name, email, and message.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Visitor name' },
+          email: { type: 'string', description: 'Visitor email' },
+          message: { type: 'string', description: 'Message to send' }
+        },
+        required: ['name', 'email', 'message']
+      }
+    }
+  });
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -190,6 +221,7 @@ module.exports = async function handler(req, res) {
 
   try {
     var reply = '';
+    var actions = [];
     for (var i = 0; i < 5; i++) {
       var groqRes = await fetch(GROQ_URL, {
         method: 'POST',
@@ -227,7 +259,19 @@ module.exports = async function handler(req, res) {
           var tc = msg.tool_calls[t];
           var args = {};
           try { args = JSON.parse((tc.function && tc.function.arguments) || '{}'); } catch (err) { args = {}; }
-          var result = await sendToCarlos(args);
+          var fnName = (tc.function && tc.function.name) || '';
+          var result;
+          if (fnName === 'open_website') {
+            var site = SITES[String(args.site || '').toLowerCase()];
+            if (site) {
+              actions.push({ type: 'open_link', url: site.url, label: site.label });
+              result = { ok: true, opened: site.url };
+            } else {
+              result = { ok: false, error: 'Unknown website.' };
+            }
+          } else {
+            result = await sendToCarlos(args);
+          }
           conversation.push({
             role: 'tool',
             tool_call_id: tc.id,
@@ -247,7 +291,7 @@ module.exports = async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'No response from chat service.' });
     }
 
-    return res.status(200).json({ ok: true, reply: reply });
+    return res.status(200).json({ ok: true, reply: reply, actions: actions });
   } catch (err) {
     console.error('chat error:', err.message);
     return res.status(502).json({

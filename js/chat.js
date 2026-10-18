@@ -66,6 +66,32 @@
       return bubble;
     }
 
+    function openLinks(actions) {
+      if (!Array.isArray(actions)) return;
+      actions.forEach(function (action) {
+        if (!action || action.type !== 'open_link') return;
+        var url = String(action.url || '');
+        if (!/^https?:\/\//i.test(url)) return;
+
+        var win = null;
+        try { win = window.open(url, '_blank'); } catch (err) { win = null; }
+        if (win) {
+          try { win.opener = null; } catch (err) { /* ignore */ }
+          return;
+        }
+
+        /* Popup blocked: show a tappable fallback link instead. */
+        var bubble = doc.createElement('div');
+        bubble.className = 'chat-bubble chat-assistant';
+        bubble.innerHTML =
+          'Tap to open ' +
+          '<a class="chat-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' +
+          escapeHtml(action.label || 'the website') + '</a>';
+        messagesEl.appendChild(bubble);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
     function setBusy(state) {
       busy = state;
       var submitBtn = form.querySelector('button[type="submit"]');
@@ -123,6 +149,7 @@
           typing.remove();
           if (result.status >= 200 && result.status < 300 && result.data.ok && result.data.reply) {
             addBubble('assistant', result.data.reply);
+            openLinks(result.data.actions);
             history.push({ role: 'assistant', content: result.data.reply });
           } else {
             addBubble('assistant', result.data.error || 'Sorry, something went wrong. Please try again.');
