@@ -49,6 +49,40 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function emailShell(innerHtml) {
+  return (
+    '<div style="background-color:#0b1120;padding:32px 16px;font-family:Segoe UI,Helvetica,Arial,sans-serif;">' +
+    '<div style="max-width:600px;margin:0 auto;background-color:#111a2e;border:1px solid #1f2b45;border-radius:14px;padding:28px;">' +
+    innerHtml +
+    '<p style="margin:24px 0 0;font-size:12px;color:#8494ab;">Carlos Nino Q. Padilla &middot; IT Student &middot; Bulacan, Philippines</p>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
+function ownerEmailHtml(name, email, message) {
+  var safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+  return emailShell(
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">NEW OJT INQUIRY</p>' +
+    '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">You have a new message</h2>' +
+    '<p style="margin:0 0 6px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">From:</strong> ' + escapeHtml(name) + '</p>' +
+    '<p style="margin:0 0 16px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">Email:</strong> ' +
+    '<a href="mailto:' + escapeHtml(email) + '" style="color:#60a5fa;">' + escapeHtml(email) + '</a></p>' +
+    '<div style="background-color:#0a1020;border:1px solid #1f2b45;border-radius:8px;padding:16px;">' +
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:#e9eff9;">' + safeMessage + '</p>' +
+    '</div>'
+  );
+}
+
+function autoReplyHtml(name) {
+  return emailShell(
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">MESSAGE RECEIVED</p>' +
+    '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">Thanks for reaching out, ' + escapeHtml(name) + '!</h2>' +
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:#a9b8cd;">I received your message and will reply within a day or two.</p>' +
+    '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
+  );
+}
+
 async function sendEmail(apiKey, payload) {
   var res = await fetch(BREVO_URL, {
     method: 'POST',
@@ -84,13 +118,27 @@ async function sendToCarlos(args) {
       to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
       replyTo: { email: email, name: name },
       subject: 'New OJT Inquiry from ' + name,
-      htmlContent:
-        '<div style="font-family:Arial,sans-serif;">' +
-        '<p><strong>From:</strong> ' + escapeHtml(name) + ' (' + escapeHtml(email) + ')</p>' +
-        '<p>' + escapeHtml(message).replace(/\n/g, '<br>') + '</p>' +
-        '</div>',
+      htmlContent: ownerEmailHtml(name, email, message),
       textContent: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message
     });
+
+    try {
+      await sendEmail(brevoKey, {
+        sender: { name: OWNER_NAME, email: OWNER_EMAIL },
+        to: [{ email: email, name: name }],
+        subject: 'Thanks for reaching out!',
+        htmlContent: autoReplyHtml(name),
+        textContent:
+          'Hi ' + name + ',\n\n' +
+          'Thanks for reaching out. I received your message and will reply ' +
+          'within a day or two.\n\n' +
+          'Best regards,\n' +
+          OWNER_NAME
+      });
+    } catch (autoErr) {
+      // main message was delivered; ignore auto-reply failure
+    }
+
     return { ok: true };
   } catch (err) {
     return { ok: false, error: 'Could not send the email. Please try again later.' };
