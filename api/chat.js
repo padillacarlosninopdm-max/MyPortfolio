@@ -282,31 +282,66 @@ module.exports = async function handler(req, res) {
 
   var conversation = [{ role: 'system', content: SYSTEM_PROMPT }].concat(messages);
 
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
   try {
     var reply = '';
     var actions = [];
-    for (var i = 0; i < 5; i++) {
-      var groqRes = await fetch(GROQ_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: conversation,
-          tools: tools.length ? tools : undefined,
-          tool_choice: tools.length ? 'auto' : undefined,
-          max_tokens: 512,
-          temperature: 0.6
-        })
-      });
+    var rateLimited = false;
+    for (var i = 0; i < 3; i++) {
+      var groqRes = null;
+      var attempts = 0;
+      while (attempts < 3) {
+        groqRes = await fetch(GROQ_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: conversation,
+            tools: tools.length ? tools : undefined,
+            tool_choice: tools.length ? 'auto' : undefined,
+            max_tokens: 384,
+            temperature: 0.6
+          })
+        });
 
-      if (!groqRes.ok) {
-        var detail = '';
-        try { detail = await groqRes.text(); } catch (err) { detail = ''; }
-        throw new Error('Groq error ' + groqRes.status + ': ' + detail.slice(0, 300));
+        if (groqRes.status === 429) {
+          rateLimited = true;
+          var retryAfter = parseInt(groqRes.headers.get('retry-after') || '', 10);
+          var wait = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * (attempts + 1);
+          if (wait > 6000) wait = 6000;
+          await sleep(wait);
+          attempts++;
+          continue;
+        }
+        break;
       }
+
+      if (!groqRes || !groqRes.ok) {
+        var detail = '';
+        try { detail = groqRes ? await groqRes.text() : ''; } catch (err) { detail = ''; }
+        var status = groqRes ? groqRes.status : 0;
+        console.error('chat error:', status, detail.slice(0, 300));
+        if (status === 429) {
+          return res.status(429).json({
+            ok: false,
+            error: 'I am getting a lot of requests right now. Please try again in a few seconds.'
+          });
+        }
+        if (status >= 500) {
+          return res.status(502).json({
+            ok: false,
+            error: 'The assistant is temporarily unavailable. Please try again shortly.'
+          });
+        }
+        throw new Error('Groq error ' + status + ': ' + detail.slice(0, 300));
+      }
+      rateLimited = false;
 
       var data = await groqRes.json();
       var choice = (data && Array.isArray(data.choices) && data.choices[0]) ? data.choices[0] : null;
@@ -355,7 +390,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (!reply) {
-      return res.status(502).json({ ok: false, error: 'No response from chat service.' });
+      return res.status(502).json({ ok: false, error: 'The assistant is temporarily unavailable. Please try again shortly.' });
     }
 
     return res.status(200).json({ ok: true, reply: reply, actions: actions });
@@ -363,7 +398,7 @@ module.exports = async function handler(req, res) {
     console.error('chat error:', err.message);
     return res.status(502).json({
       ok: false,
-      error: 'Could not get a reply. Please try again later.'
+      error: 'The assistant is temporarily unavailable. Please try again shortly.'
     });
   }
 };
