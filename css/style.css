@@ -1128,35 +1128,35 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   .showcase-dual {
     grid-template-columns: 1fr;
   }
+  .showcase-dual .showcase-web-half {
+    padding: 56px 14px 36px;
+  }
   .showcase-dual .showcase-mobile-half {
     border-left: none;
     border-top: 1px solid var(--border);
-    padding: 56px 22px 36px;
+    padding: 56px 14px 36px;
   }
+  /* Keep all three cards on one row instead of stacking one per row. */
   .showcase {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding: 36px 22px 32px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 32px 14px 28px;
   }
-  /* No fanning on narrow screens - rotated, overlapping cards get clipped.
-     Stack phones in a single centered column with equal widths so all
-     three cards align. */
+  /* Flatten the fan: no tilt or overlap, but the centre card still pops. */
   .shot-left .shot-frame, .shot-right .shot-frame,
-  .shot-center .shot-frame, .shot:hover .shot-frame,
+  .shot:hover .shot-frame,
   .showcase-phones .shot-left .shot-frame,
   .showcase-phones .shot-right .shot-frame,
-  .showcase-phones .shot-center .shot-frame,
   .showcase-phones .shot:hover .shot-frame,
   .showcase-dual .showcase-mobile-half .shot-left .shot-frame,
-  .showcase-dual .showcase-mobile-half .shot-right .shot-frame,
-  .showcase-dual .showcase-mobile-half .shot-center .shot-frame { transform: none; }
-  .showcase-phones,
-  .showcase-dual .showcase-mobile-half {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 28px;
+  .showcase-dual .showcase-mobile-half .shot-right .shot-frame { transform: none; }
+
+  /* Phones: three across instead of a stacked column. */
+  .showcase-phones {
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    padding: 36px 14px 30px;
   }
   .showcase .shot + .shot,
   .showcase .shot-center,
@@ -1166,10 +1166,17 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   .showcase-phones .shot-center,
   .showcase-dual .showcase-mobile-half .shot,
   .showcase-dual .showcase-mobile-half .shot-center {
-    width: min(280px, 100%);
-    max-width: 280px;
-    flex: none;
-    margin: 0 auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 0;
+    margin: 0;
+  }
+  /* Compact handset frames for the smaller cards. */
+  .showcase-phones .shot-frame,
+  .showcase-dual .showcase-mobile-half .shot-frame {
+    border-radius: 16px;
+    padding: 5px;
   }
   /* Force identical image boxes so captions line up even if the source
      screenshots differ by a few pixels in height. */
@@ -1179,7 +1186,13 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
     height: auto;
     aspect-ratio: 700 / 1415;
     object-fit: cover;
+    border-radius: 11px;
   }
+  /* Compact browser chrome and captions for the smaller cards. */
+  .shot-chrome { padding: 5px 7px; gap: 4px; }
+  .shot-chrome i { width: 5px; height: 5px; }
+  .shot-chrome b { margin-left: 4px; padding: 2px 7px; font-size: 0.52rem; }
+  .shot figcaption { font-size: 0.6rem; margin-top: 8px; }
   /* The dual-half rules above have higher specificity, so they would keep
      the fan margins and fixed phone widths on narrow screens - reset them. */
   .showcase-dual .showcase-web-half .shot + .shot,
