@@ -180,21 +180,41 @@
       var i;
       var en = [];
       for (i = 0; i < voices.length; i++) {
-        if (/^en/i.test(voices[i].lang)) en.push(voices[i]);
+        if (/^en(-|_|$)/i.test(voices[i].lang)) en.push(voices[i]);
       }
       var pool = en.length ? en : voices;
 
-      var hints = ['google uk english male', 'david', 'mark', 'guy', 'daniel', 'alex', 'fred', 'rishi', 'oliver', 'george', 'james'];
+      var hints = [
+        'google uk english male', 'microsoft david', 'microsoft mark', 'microsoft guy',
+        'david', 'mark', 'guy', 'daniel', 'alex', 'fred', 'rishi', 'oliver',
+        'george', 'james', 'thomas'
+      ];
       for (var h = 0; h < hints.length; h++) {
         for (i = 0; i < pool.length; i++) {
-          if (pool[i].name.toLowerCase().indexOf(hints[h]) !== -1) return pool[i];
+          var n = pool[i].name.toLowerCase();
+          if (n.indexOf(hints[h]) !== -1 && n.indexOf('female') === -1) return pool[i];
         }
       }
       for (i = 0; i < pool.length; i++) {
-        var n = pool[i].name.toLowerCase();
-        if (n.indexOf('male') !== -1 && n.indexOf('female') === -1) return pool[i];
+        var m = pool[i].name.toLowerCase();
+        if (m.indexOf('male') !== -1 && m.indexOf('female') === -1) return pool[i];
       }
-      return pool[0] || null;
+      return null;
+    }
+
+    var voicePoll = null;
+
+    function loadVoices() {
+      var found = pickMaleVoice();
+      if (found) {
+        chosenVoice = found;
+        if (voicePoll) {
+          window.clearInterval(voicePoll);
+          voicePoll = null;
+        }
+        return true;
+      }
+      return false;
     }
 
     function updateVoiceBtn() {
@@ -204,6 +224,8 @@
       voiceBtn.setAttribute('aria-label', ttsEnabled ? 'Voice output on' : 'Voice output off');
       voiceBtn.title = ttsEnabled ? 'Voice output on' : 'Voice output off';
     }
+
+    var voiceFallbackLogged = false;
 
     function speak(text) {
       if (!synth || !ttsEnabled || !text) return;
@@ -215,12 +237,22 @@
       if (!clean) return;
       try {
         synth.cancel();
+        if (!chosenVoice) chosenVoice = pickMaleVoice();
         var utter = new SpeechSynthesisUtterance(clean);
         if (chosenVoice) {
           utter.voice = chosenVoice;
           utter.lang = chosenVoice.lang;
         } else {
+          /* No male voice on this device: deepen the default voice instead. */
           utter.lang = 'en-US';
+          utter.pitch = 0.75;
+          if (!voiceFallbackLogged) {
+            voiceFallbackLogged = true;
+            var names = (synth.getVoices() || []).map(function (v) {
+              return v.name + ' (' + v.lang + ')';
+            });
+            console.log('chat voice: no male voice found, using default with pitch 0.75. Voices:', names);
+          }
         }
         synth.speak(utter);
       } catch (err) { /* speech unavailable */ }
@@ -230,11 +262,19 @@
       voiceBtn.remove();
       voiceBtn = null;
     } else {
-      chosenVoice = pickMaleVoice();
+      if (!loadVoices()) {
+        voicePoll = window.setInterval(loadVoices, 100);
+        window.setTimeout(function () {
+          if (voicePoll) {
+            window.clearInterval(voicePoll);
+            voicePoll = null;
+          }
+        }, 5000);
+      }
       if (typeof synth.addEventListener === 'function') {
-        synth.addEventListener('voiceschanged', function () { chosenVoice = pickMaleVoice(); });
+        synth.addEventListener('voiceschanged', loadVoices);
       } else {
-        synth.onvoiceschanged = function () { chosenVoice = pickMaleVoice(); };
+        synth.onvoiceschanged = loadVoices;
       }
       updateVoiceBtn();
       voiceBtn.addEventListener('click', function () {
