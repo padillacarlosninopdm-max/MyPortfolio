@@ -1,13 +1,13 @@
 # Carlos Niño Padilla — OJT Portfolio
 
-A static portfolio website and printable CV, built for an **OJT application**. No build
+A static portfolio website and printable résumé, built for an **OJT application**. No build
 step, no dependencies, no backend. Open `index.html` and it works.
 
 ```
 index.html          main portfolio
-resume.html         A4 printable CV (click "Print / Save as PDF")
+resume.html         A4 printable résumé (click "Print / Save as PDF")
 css/style.css       portfolio styles
-css/resume.css      CV + print styles
+css/resume.css      résumé + print styles
 js/main.js          theme, nav, scroll effects, form
 assets/cutout.png           transparent hero cutout (remove.bg export)
 assets/photo-512.jpg        circular crop (résumé)
@@ -58,7 +58,7 @@ head and the shoulders, leaving pale vertical strips and a smeared shirt. remove
 handles all of that correctly — no need to re-derive it.
 
 `assets/photo-512.jpg` and `assets/photo-1024.jpg` are separate circular crops used only
-by the résumé (a printed CV wants the white background, not a cutout).
+by the résumé (a printed résumé wants the white background, not a cutout).
 
 To swap in a new photo, replace `assets/cutout.png` and update the `width`/`height`
 attributes on the hero `<img>` — they're only there to stop the page reflowing while the
@@ -185,7 +185,7 @@ failing silently.
 
 ## 5. Résumé — `resume.html`
 
-The CV repeats the same placeholders. Open it in a browser and click **Print / Save as
+The résumé repeats the same placeholders. Open it in a browser and click **Print / Save as
 PDF**. In the print dialog choose **Save as PDF**, set margins to **None** (the stylesheet
 already sets `@page { margin: 0 }`), and enable **Background graphics**.
 
@@ -194,7 +194,7 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 # Design notes
 
 - **Dark by default** (the dark tokens live in `:root`; there is no toggle). The résumé
-  stays light on purpose, since a CV has to print on white paper.
+  stays light on purpose, since a résumé has to print on white paper.
 - **Hero** follows a cutout-portfolio layout: `Hello !` tag → "I'm" + your name in blue and
   underlined → role headline → an intro card (`.hero-note`) → two buttons, with your cutout
   on a gradient arch. `.hero-figure` holds the cutout and `.figure-blob` is the shape behind
@@ -209,7 +209,7 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
   new markup from elsewhere and it stays invisible, that class plus JS is the cause.
 - **Dark mode is permanent** — the dark tokens live in `:root` and there is no toggle,
   so there is no theme flash to guard against. `resume.html` stays light on purpose,
-  since a CV has to print on white paper.
+  since a résumé has to print on white paper.
 
 # Before you send it
 
@@ -219,7 +219,7 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 - [ ] Screenshots are real and readable, not the placeholder SVGs
 - [ ] Opens correctly on your phone (narrow window test the hamburger menu)
 - [ ] Dark mode toggle checked
-- [ ] CV printed to PDF and proofread
+- [ ] Résumé printed to PDF and proofread
 
 # Deploying later
 
