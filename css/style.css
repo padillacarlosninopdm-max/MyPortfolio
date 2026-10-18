@@ -4,8 +4,12 @@
    ========================================================================== */
 
 /* ---------- Tokens ----------
-   Dark only. The site is permanently dark; there is no theme switch. */
+   Dark is the default; light re-maps the same tokens. The theme is driven by
+   a data-theme attribute on <html>, set by a tiny inline script in the head
+   (before first paint) and flipped by the header toggle in js/main.js. */
 :root {
+  color-scheme: dark;
+
   --font-display: "Sora", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
@@ -38,6 +42,33 @@
   --radius-lg: 20px;
   --maxw: 1120px;
   --nav-h: 68px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --ink: #0f172a;
+  --ink-soft: #41506b;
+  --ink-mute: #64748b;
+
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --primary-700: #1e3a8a;
+  --primary-soft: #dbeafe;
+  --accent: #b45309;
+  --accent-soft: #fef3c7;
+
+  --bg: #f6f8fc;
+  --bg-soft: #edf1f8;
+  --surface: #ffffff;
+  --surface-2: #f1f5fb;
+  --border: #dbe3ef;
+  --border-strong: #c2cfe2;
+
+  --ring: rgba(37, 99, 235, 0.18);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 30px -12px rgba(15, 23, 42, 0.16);
+  --shadow-lg: 0 30px 70px -28px rgba(15, 23, 42, 0.25);
 }
 
 /* ---------- Reset ---------- */
@@ -1205,6 +1236,60 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
     box-shadow: 0 30px 60px -26px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--primary);
   }
 }
+
+/* ---------- Theme toggle button ---------- */
+/* Dark mode shows the sun (tap for light); light mode shows the moon. */
+.theme-toggle .icon-moon { display: none; }
+[data-theme="light"] .theme-toggle .icon-sun { display: none; }
+[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+
+/* ---------- Light theme component overrides ----------
+   Only for the handful of spots that hard-code dark colours instead of
+   reading tokens. Everything else re-themes through the tokens above. */
+[data-theme="light"] .hero-figure img {
+  filter: drop-shadow(0 24px 30px rgba(15, 23, 42, 0.22));
+}
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .to-top { color: #fff; }
+
+/* Showcase backdrops: the dark navy wash becomes a soft paper-blue one. */
+[data-theme="light"] .showcase,
+[data-theme="light"] .showcase-dual {
+  background:
+    radial-gradient(900px 340px at 50% 34%, rgba(37, 99, 235, 0.10), transparent 68%),
+    linear-gradient(168deg, #e9effa, #e3eaf6 62%, #e7edf8);
+}
+[data-theme="light"] .showcase-dual .showcase { background: transparent; }
+[data-theme="light"] .showcase::before,
+[data-theme="light"] .showcase-dual::before {
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+}
+[data-theme="light"] .showcase-dual .showcase-mobile-half {
+  border-left-color: rgba(15, 23, 42, 0.08);
+}
+[data-theme="light"] .shot-frame {
+  box-shadow: 0 24px 50px -24px rgba(15, 23, 42, 0.35);
+}
+[data-theme="light"] .shot:hover .shot-frame {
+  box-shadow: 0 34px 70px -28px rgba(15, 23, 42, 0.4), 0 0 0 1px var(--primary);
+}
+[data-theme="light"] .showcase-phones .shot-frame {
+  box-shadow: 0 30px 55px -24px rgba(15, 23, 42, 0.4);
+}
+[data-theme="light"] .shot-chrome { background: #eef2f9; }
+[data-theme="light"] .shot-chrome i { background: #cbd5e1; }
+[data-theme="light"] .shot-chrome b { background: #fff; color: #64748b; }
+[data-theme="light"] .shot figcaption { color: #64748b; }
+[data-theme="light"] .shot-center figcaption,
+[data-theme="light"] .shot:hover figcaption { color: var(--primary); }
+
+/* Chat widget: readable icon/text on the darker blue buttons. */
+[data-theme="light"] .chat-toggle,
+[data-theme="light"] .chat-user,
+[data-theme="light"] .chat-form button,
+[data-theme="light"] .chat-form .chat-mic.listening { color: #fff; }
 
 /* ---------- Print ---------- */
 @media print {

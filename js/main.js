@@ -1,12 +1,41 @@
 /* ==========================================================================
    Carlos Niño Padilla — OJT Portfolio
    Progressive enhancement only: the page is fully readable without JS.
-   The site is permanently dark; there is no theme switch to wire up.
+   The initial theme is applied by the inline script in the head; this file
+   only wires up the header toggle on top of it.
    ========================================================================== */
 (function () {
   'use strict';
 
   var doc = document;
+
+  /* ---------- Theme toggle ---------- */
+  var root = doc.documentElement;
+  var themeToggle = doc.getElementById('themeToggle');
+  var themeMeta = doc.querySelector('meta[name="theme-color"]');
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    if (themeMeta) {
+      themeMeta.setAttribute('content', theme === 'light' ? '#f6f8fc' : '#0b1120');
+    }
+    if (themeToggle) {
+      themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+      themeToggle.setAttribute(
+        'aria-label',
+        theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+      );
+    }
+  }
+
+  if (themeToggle) {
+    applyTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+    themeToggle.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      try { localStorage.setItem('theme', next); } catch (e) { /* private mode */ }
+    });
+  }
 
   /* ---------- Mobile navigation ---------- */
   var burger = doc.getElementById('navBurger');

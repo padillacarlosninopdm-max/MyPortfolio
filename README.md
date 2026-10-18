@@ -193,8 +193,9 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 
 # Design notes
 
-- **Dark by default** (the dark tokens live in `:root`; there is no toggle). The résumé
-  stays light on purpose, since a résumé has to print on white paper.
+- **Dark by default, with a light theme** — dark tokens live in `:root`, light tokens in
+  `[data-theme="light"]`, flipped by the header toggle (`#themeToggle`) and remembered in
+  `localStorage`. The résumé stays light on purpose, since a résumé has to print on white paper.
 - **Hero** follows a cutout-portfolio layout: `Hello !` tag → "I'm" + your name in blue and
   underlined → role headline → an intro card (`.hero-note`) → two buttons, with your cutout
   on a gradient arch. `.hero-figure` holds the cutout and `.figure-blob` is the shape behind
@@ -207,9 +208,9 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 - **Sections carry `class="reveal"`** for the scroll-in animation. They start at
   `opacity: 0` and are revealed by `IntersectionObserver` in `js/main.js`. If you copy
   new markup from elsewhere and it stays invisible, that class plus JS is the cause.
-- **Dark mode is permanent** — the dark tokens live in `:root` and there is no toggle,
-  so there is no theme flash to guard against. `resume.html` stays light on purpose,
-  since a résumé has to print on white paper.
+- **Theme flash is guarded** by a tiny inline script in the head of `index.html` that sets
+  `data-theme` before first paint (stored choice first, then OS preference, then dark).
+  `resume.html` stays light on purpose, since a résumé has to print on white paper.
 
 # Before you send it
 
