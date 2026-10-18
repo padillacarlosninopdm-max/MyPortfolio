@@ -264,15 +264,59 @@
       });
     }
 
-    function addBubble(role, text) {
-      var bubble = doc.createElement('div');
-      bubble.className = 'chat-bubble chat-' + role;
-      bubble.innerHTML = linkify(escapeHtml(text))
+    function renderRich(text) {
+      return linkify(escapeHtml(text))
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*/g, '')
         .replace(/\n/g, '<br>');
+    }
+
+    function addBubble(role, text) {
+      var bubble = doc.createElement('div');
+      bubble.className = 'chat-bubble chat-' + role;
+      bubble.innerHTML = renderRich(text);
       messagesEl.appendChild(bubble);
       messagesEl.scrollTop = messagesEl.scrollHeight;
+      return bubble;
+    }
+
+    var typingTimer = null;
+    var typingEl = null;
+    var typingText = '';
+
+    function stopTyping() {
+      if (typingTimer) {
+        window.clearInterval(typingTimer);
+        typingTimer = null;
+      }
+      if (typingEl) {
+        typingEl.innerHTML = renderRich(typingText);
+        typingEl = null;
+        typingText = '';
+      }
+    }
+
+    function typeBubble(role, text) {
+      stopTyping();
+      var bubble = doc.createElement('div');
+      bubble.className = 'chat-bubble chat-' + role;
+      messagesEl.appendChild(bubble);
+
+      typingEl = bubble;
+      typingText = text;
+
+      var i = 0;
+      var step = Math.max(1, Math.ceil(text.length / 120));
+      typingTimer = window.setInterval(function () {
+        i += step;
+        bubble.textContent = text.slice(0, i);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        if (i >= text.length) {
+          stopTyping();
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+      }, 24);
+
       return bubble;
     }
 
@@ -314,13 +358,16 @@
       panel.classList.add('open');
       btn.setAttribute('aria-expanded', 'true');
       if (messagesEl.childElementCount === 0) {
-        addBubble('assistant', 'Hi! I can answer questions about Carlos, his skills, projects, and contact details. How can I help?');
+        var greeting = 'Hi! I can answer questions about Carlos, his skills, projects, and contact details. How can I help?';
+        typeBubble('assistant', greeting);
+        speak(greeting);
       }
       setTimeout(function () { input.focus(); }, 50);
     }
 
     function close() {
       stopListening();
+      stopTyping();
       if (synth) synth.cancel();
       panel.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
