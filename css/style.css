@@ -1353,6 +1353,22 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 }
 .chat-form button:disabled { opacity: 0.5; cursor: not-allowed; }
 .chat-form button svg { width: 18px; height: 18px; }
+.chat-form .chat-mic {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  border: 1px solid var(--border);
+}
+.chat-form .chat-mic:hover { color: var(--ink); border-color: var(--primary); }
+.chat-form .chat-mic.listening {
+  background: var(--primary);
+  color: #0b1120;
+  border-color: var(--primary);
+  animation: micPulse 1.2s infinite ease-in-out;
+}
+@keyframes micPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
 
 @media (max-width: 480px) {
   .chat-panel { right: 10px; bottom: 80px; width: calc(100vw - 20px); }

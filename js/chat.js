@@ -36,6 +36,15 @@
       '<div class="chat-messages" id="chatMessages"></div>' +
       '<form class="chat-form" id="chatForm">' +
       '  <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="2000" required>' +
+      '  <button type="button" class="chat-mic" id="chatMic" aria-label="Start voice input" aria-pressed="false">' +
+      '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>' +
+      '<path d="M19 10v2a7 7 0 0 1-14 0v-2"/>' +
+      '<line x1="12" y1="19" x2="12" y2="23"/>' +
+      '<line x1="8" y1="23" x2="16" y2="23"/>' +
+      '</svg>' +
+      '  </button>' +
       '  <button type="submit" aria-label="Send">' +
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -50,9 +59,73 @@
     var form = panel.querySelector('#chatForm');
     var input = panel.querySelector('#chatInput');
     var closeBtn = panel.querySelector('.chat-close');
+    var micBtn = panel.querySelector('#chatMic');
 
     var history = [];
     var busy = false;
+
+    /* Voice input via Web Speech API. Hidden on browsers without support. */
+    var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var recognition = null;
+    var listening = false;
+
+    if (!SpeechRec) {
+      micBtn.remove();
+      micBtn = null;
+    } else {
+      recognition = new SpeechRec();
+      recognition.lang = 'en-PH';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+
+      recognition.onstart = function () {
+        listening = true;
+        micBtn.classList.add('listening');
+        micBtn.setAttribute('aria-pressed', 'true');
+        micBtn.setAttribute('aria-label', 'Stop voice input');
+      };
+
+      recognition.onresult = function (e) {
+        var parts = [];
+        for (var i = 0; i < e.results.length; i++) {
+          parts.push(e.results[i][0].transcript);
+        }
+        input.value = parts.join(' ').replace(/\s+/g, ' ').trim().slice(0, 2000);
+      };
+
+      recognition.onerror = function (e) {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          addBubble('assistant', 'Microphone access was blocked. Please allow mic permission in your browser settings.');
+        } else if (e.error !== 'aborted' && e.error !== 'no-speech') {
+          addBubble('assistant', 'Voice input failed. Please try again or type your message.');
+        }
+      };
+
+      recognition.onend = function () {
+        listening = false;
+        micBtn.classList.remove('listening');
+        micBtn.setAttribute('aria-pressed', 'false');
+        micBtn.setAttribute('aria-label', 'Start voice input');
+        if (panel.classList.contains('open')) input.focus();
+      };
+
+      micBtn.addEventListener('click', function () {
+        if (busy) return;
+        if (listening) {
+          recognition.stop();
+          return;
+        }
+        try {
+          recognition.start();
+        } catch (err) {
+          /* Recognition already running. */
+        }
+      });
+    }
+
+    function stopListening() {
+      if (recognition && listening) recognition.stop();
+    }
 
     /* Known bare domains the assistant may mention without the https:// prefix. */
     var BARE_LINK = '\\b(?:www\\.)?(?:github\\.com|linkedin\\.com|solarisiot\\.com|rentahanan\\.vercel\\.app|myportfolio-psi-three-54\\.vercel\\.app)\\/[^\\s<"\']+';
@@ -111,6 +184,7 @@
 
     function setBusy(state) {
       busy = state;
+      if (state) stopListening();
       var submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) submitBtn.disabled = state;
       input.disabled = state;
@@ -126,6 +200,7 @@
     }
 
     function close() {
+      stopListening();
       panel.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
     }
