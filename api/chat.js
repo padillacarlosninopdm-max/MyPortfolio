@@ -37,10 +37,18 @@ var SYSTEM_PROMPT =
   'Confirm briefly, for example: Opening the Solaris website in a new tab. ' +
   'If the visitor explicitly asks to send a message to Carlos, use the send_message_to_carlos tool. ' +
   'Collect the visitor name, email, and message first; if any are missing, ask for them. Never send without explicit request. ' +
+  'If the visitor asks you to compose, create, or write a sentence or paragraph about any topic, ' +
+  'write the draft directly in your reply as plain text, then ask whether they want you to email it to Carlos. ' +
+  'Do not call any tool yet at that point. Only after the visitor explicitly confirms (for example "yes", "send it", "email it"), ' +
+  'call the send_composed_text tool with subject set to the topic and content set to the exact draft you just showed. ' +
+  'After it succeeds, confirm that the email was sent to Carlos. ' +
+  'If the visitor asks to send composed text to an email address other than Carlos, explain that you can only email Carlos. ' +
   'Be concise, friendly, and professional. Reply in plain text only, no markdown formatting such as **bold**, ' +
   '*italics*, or bullet asterisks. Whenever you mention a website, GitHub, LinkedIn, or the resume, ' +
   'always write the full URL starting with https:// so it appears as a clickable link. ' +
-  'If asked something unrelated, politely redirect to his portfolio. ' +
+  'Composing requested text is allowed even when the topic is unrelated to Carlos; this is the one exception ' +
+  'to the unrelated-topic rule. Never invent facts about Carlos not in this context. ' +
+  'If asked something unrelated that is not a composition request, politely redirect to his portfolio. ' +
   'Never invent facts not in this context.';
 
 function isMessage(m) {
@@ -92,6 +100,18 @@ function autoReplyHtml(name) {
     '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">Thanks for reaching out, ' + escapeHtml(name) + '!</h2>' +
     '<p style="margin:0;font-size:14px;line-height:1.65;color:#a9b8cd;">I received your message and will reply within a day or two.</p>' +
     '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
+  );
+}
+
+function composedTextHtml(subject, content) {
+  var safeSubject = escapeHtml(subject).replace(/\n/g, ' ');
+  var safeContent = escapeHtml(content).replace(/\n/g, '<br>');
+  return emailShell(
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">AI COMPOSED TEXT</p>' +
+    '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">' + safeSubject + '</h2>' +
+    '<div style="background-color:#0a1020;border:1px solid #1f2b45;border-radius:8px;padding:16px;">' +
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:#e9eff9;">' + safeContent + '</p>' +
+    '</div>'
   );
 }
 
@@ -157,6 +177,31 @@ async function sendToCarlos(args) {
   }
 }
 
+async function sendComposedText(args) {
+  var brevoKey = process.env.BREVO_API_KEY;
+  if (!brevoKey) return { ok: false, error: 'Email service is not configured.' };
+
+  var subject = String((args && args.subject) || '').trim().slice(0, 200);
+  var content = String((args && args.content) || '').trim().slice(0, 5000);
+
+  if (!subject || !content) {
+    return { ok: false, error: 'Missing subject or content.' };
+  }
+
+  try {
+    await sendEmail(brevoKey, {
+      sender: { name: OWNER_NAME, email: OWNER_EMAIL },
+      to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
+      subject: 'AI-composed text: ' + subject,
+      htmlContent: composedTextHtml(subject, content),
+      textContent: 'Subject: ' + subject + '\\n\\n' + content
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: 'Could not send the email. Please try again later.' };
+  }
+}
+
 var tools = [{
   type: 'function',
   function: {
@@ -190,6 +235,22 @@ if (process.env.BREVO_API_KEY) {
           message: { type: 'string', description: 'Message to send' }
         },
         required: ['name', 'email', 'message']
+      }
+    }
+  });
+
+  tools.push({
+    type: 'function',
+    function: {
+      name: 'send_composed_text',
+      description: 'Email AI-composed text (a sentence or paragraph you wrote) to Carlos. Use ONLY after the visitor asked you to compose text about a topic AND then explicitly confirmed to send it (for example: "yes", "send it", "email it"). Never call before confirmation. Recipient is always Carlos.',
+      parameters: {
+        type: 'object',
+        properties: {
+          subject: { type: 'string', description: 'Short subject or topic of the composed text' },
+          content: { type: 'string', description: 'The exact composed text to email' }
+        },
+        required: ['subject', 'content']
       }
     }
   });
@@ -271,8 +332,12 @@ module.exports = async function handler(req, res) {
             } else {
               result = { ok: false, error: 'Unknown website.' };
             }
-          } else {
+          } else if (fnName === 'send_message_to_carlos') {
             result = await sendToCarlos(args);
+          } else if (fnName === 'send_composed_text') {
+            result = await sendComposedText(args);
+          } else {
+            result = { ok: false, error: 'Unknown tool.' };
           }
           conversation.push({
             role: 'tool',
