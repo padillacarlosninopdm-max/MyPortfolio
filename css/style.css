@@ -1488,7 +1488,7 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
-.chat-form input {
+.chat-form textarea {
   flex: 1;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
@@ -1496,13 +1496,19 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   background: var(--bg-soft);
   color: var(--ink);
   font: inherit;
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.4;
+  font-family: inherit;
 }
-.chat-form input:focus {
+.chat-form textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--ring);
 }
-.chat-form input.listening {
+.chat-form textarea.listening {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--ring);
 }

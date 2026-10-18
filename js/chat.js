@@ -45,7 +45,7 @@
       '</div>' +
       '<div class="chat-messages" id="chatMessages"></div>' +
       '<form class="chat-form" id="chatForm">' +
-      '  <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="2000" required>' +
+      '  <textarea id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="2000" required rows="1"></textarea>' +
       '  <button type="button" class="chat-mic" id="chatMic" aria-label="Start voice input" aria-pressed="false">' +
       '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -71,6 +71,12 @@
     var closeBtn = panel.querySelector('.chat-close');
     var micBtn = panel.querySelector('#chatMic');
     var voiceBtn = panel.querySelector('#chatVoice');
+
+    function resizeInput() {
+      input.style.height = 'auto';
+      var h = Math.min(input.scrollHeight, 120);
+      input.style.height = h + 'px';
+    }
 
     var history = [];
     var busy = false;
@@ -106,6 +112,7 @@
           parts.push(e.results[i][0].transcript);
         }
         input.value = parts.join(' ').replace(/\s+/g, ' ').trim().slice(0, 2000);
+        resizeInput();
       };
 
       recognition.onerror = function (e) {
@@ -138,7 +145,7 @@
           return;
         }
 
-        if (panel.classList.contains('open')) input.focus();
+        if (panel.classList.contains('open')) { input.focus(); resizeInput(); }
       };
 
       micBtn.addEventListener('click', function () {
@@ -418,12 +425,28 @@
     });
     closeBtn.addEventListener('click', close);
 
+    input.addEventListener('input', resizeInput);
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (busy) return;
+        if (input.value.trim() === '') return;
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+      }
+    });
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (busy) return;
       var text = input.value.trim();
       if (!text) return;
       input.value = '';
+      input.style.height = 'auto';
       addBubble('user', text);
       history.push({ role: 'user', content: text });
 
