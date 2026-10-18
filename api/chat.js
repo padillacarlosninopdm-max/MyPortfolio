@@ -18,7 +18,7 @@ var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
   'Contact details: phone 09553764958; email padillacarlosnino.pdm@gmail.com; ' +
   'GitHub at https://github.com/padillacarlosninopdm-max; LinkedIn at https://linkedin.com/in/carlos-padilla-21b1243ba; ' +
-  'portfolio at https://myportfolio-psi-three-54.vercel.app; CV at https://myportfolio-psi-three-54.vercel.app/resume.html. ' +
+  'portfolio at https://myportfolio-psi-three-54.vercel.app; resume at https://myportfolio-psi-three-54.vercel.app/resume.html. ' +
   'Education: Pambayang Dalubhasaan ng Marilao, BS Information Technology, 4th year, Marilao, Bulacan, ' +
   'expected graduation 2027. Aspiring Frontend Developer and Quality Assurance, open to OJT. ' +
   'Profile: hands-on frontend development and software QA, React and Flutter interfaces, testing and defect logging. ' +
@@ -38,7 +38,7 @@ var SYSTEM_PROMPT =
   'If the visitor explicitly asks to send a message to Carlos, use the send_message_to_carlos tool. ' +
   'Collect the visitor name, email, and message first; if any are missing, ask for them. Never send without explicit request. ' +
   'Be concise, friendly, and professional. Reply in plain text only, no markdown formatting such as **bold**, ' +
-  '*italics*, or bullet asterisks. Whenever you mention a website, GitHub, LinkedIn, or the CV, ' +
+  '*italics*, or bullet asterisks. Whenever you mention a website, GitHub, LinkedIn, or the resume, ' +
   'always write the full URL starting with https:// so it appears as a clickable link. ' +
   'If asked something unrelated, politely redirect to his portfolio. ' +
   'Never invent facts not in this context.';
@@ -75,7 +75,7 @@ function emailShell(innerHtml) {
 function ownerEmailHtml(name, email, message) {
   var safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
   return emailShell(
-    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">NEW OJT INQUIRY</p>' +
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">NEW MESSAGE</p>' +
     '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">You have a new message</h2>' +
     '<p style="margin:0 0 6px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">From:</strong> ' + escapeHtml(name) + '</p>' +
     '<p style="margin:0 0 16px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">Email:</strong> ' +
@@ -129,7 +129,7 @@ async function sendToCarlos(args) {
       sender: { name: OWNER_NAME, email: OWNER_EMAIL },
       to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
       replyTo: { email: email, name: name },
-      subject: 'New OJT Inquiry from ' + name,
+      subject: 'New Message from ' + name,
       htmlContent: ownerEmailHtml(name, email, message),
       textContent: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message
     });

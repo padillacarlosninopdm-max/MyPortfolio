@@ -40,7 +40,7 @@ function emailShell(innerHtml) {
 function ownerEmailHtml(name, email, message) {
   var safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
   return emailShell(
-    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">NEW OJT INQUIRY</p>' +
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">NEW MESSAGE</p>' +
     '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">You have a new message</h2>' +
     '<p style="margin:0 0 6px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">From:</strong> ' + escapeHtml(name) + '</p>' +
     '<p style="margin:0 0 16px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">Email:</strong> ' +
@@ -117,7 +117,7 @@ module.exports = async function handler(req, res) {
       sender: { name: OWNER_NAME, email: OWNER_EMAIL },
       to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
       replyTo: { email: email, name: name },
-      subject: 'New OJT Inquiry from ' + name,
+      subject: 'New Message from ' + name,
       htmlContent: ownerEmailHtml(name, email, message),
       textContent: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message
     });
