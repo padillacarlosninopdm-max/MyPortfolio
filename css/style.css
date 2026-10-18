@@ -1483,6 +1483,7 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 
 .chat-form {
   display: flex;
+  align-items: flex-end;
   gap: 8px;
   padding: 10px;
   border-top: 1px solid var(--border);
