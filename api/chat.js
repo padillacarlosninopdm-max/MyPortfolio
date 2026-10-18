@@ -1,14 +1,12 @@
-/* ==========================================================================
-   POST /api/chat — portfolio chatbot backend (Vercel serverless).
-   Proxies the conversation to Groq. The Groq key lives ONLY in the Vercel
-   environment variable GROQ_API_KEY — never commit it to this repo.
-   ========================================================================== */
 'use strict';
 
 var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 var MODEL = 'qwen/qwen3.8-27b';
 var MAX_MESSAGES = 20;
 var MAX_LEN = 2000;
+var BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
+var OWNER_EMAIL = 'padillacarlosnino.pdm@gmail.com';
+var OWNER_NAME = 'Carlos Nino Q. Padilla';
 
 var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
@@ -27,6 +25,8 @@ var SYSTEM_PROMPT =
   '3) Celevation - LAN-based event management system; C# WinForms, MySQL/MariaDB. Team project: mostly front end with minor backend, plus QA. ' +
   'Seminars: Learn AI and ChatGPT (DICT, 2026); Build Your Future with AI (PDM College of Computer Studies CSS, 2026); ' +
   'Git Happens (PDM CSS/CS Department, 2026). No certifications are listed yet. ' +
+  'If the visitor explicitly asks to send a message to Carlos, use the send_message_to_carlos tool. ' +
+  'Collect the visitor name, email, and message first; if any are missing, ask for them. Never send without explicit request. ' +
   'Be concise, friendly, and professional. Reply in plain text only, no markdown formatting such as **bold**, ' +
   '*italics*, or bullet asterisks. If asked something unrelated, politely redirect to his portfolio. ' +
   'Never invent facts not in this context.';
@@ -35,6 +35,84 @@ function isMessage(m) {
   return m && (m.role === 'user' || m.role === 'assistant') &&
     typeof m.content === 'string' && m.content.trim().length > 0;
 }
+
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function sendEmail(apiKey, payload) {
+  var res = await fetch(BREVO_URL, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'api-key': apiKey
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    var detail = '';
+    try { detail = await res.text(); } catch (err) { detail = ''; }
+    throw new Error('Brevo error ' + res.status + ': ' + detail.slice(0, 300));
+  }
+}
+
+async function sendToCarlos(args) {
+  var brevoKey = process.env.BREVO_API_KEY;
+  if (!brevoKey) return { ok: false, error: 'Email service is not configured.' };
+
+  var name = String((args && args.name) || '').trim().slice(0, 100);
+  var email = String((args && args.email) || '').trim().slice(0, 254);
+  var message = String((args && args.message) || '').trim().slice(0, 5000);
+
+  if (!name || !isEmail(email) || !message) {
+    return { ok: false, error: 'Missing or invalid name, email, or message.' };
+  }
+
+  try {
+    await sendEmail(brevoKey, {
+      sender: { name: OWNER_NAME, email: OWNER_EMAIL },
+      to: [{ email: OWNER_EMAIL, name: OWNER_NAME }],
+      replyTo: { email: email, name: name },
+      subject: 'New OJT Inquiry from ' + name,
+      htmlContent:
+        '<div style="font-family:Arial,sans-serif;">' +
+        '<p><strong>From:</strong> ' + escapeHtml(name) + ' (' + escapeHtml(email) + ')</p>' +
+        '<p>' + escapeHtml(message).replace(/\n/g, '<br>') + '</p>' +
+        '</div>',
+      textContent: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: 'Could not send the email. Please try again later.' };
+  }
+}
+
+var tools = process.env.BREVO_API_KEY ? [{
+  type: 'function',
+  function: {
+    name: 'send_message_to_carlos',
+    description: 'Send a message from the website visitor to Carlos Padilla by email. Use only when the visitor explicitly asks to send or contact Carlos and has provided name, email, and message.',
+    parameters: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Visitor name' },
+        email: { type: 'string', description: 'Visitor email' },
+        message: { type: 'string', description: 'Message to send' }
+      },
+      required: ['name', 'email', 'message']
+    }
+  }
+}] : [];
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -60,33 +138,63 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Please send a message.' });
   }
 
+  var conversation = [{ role: 'system', content: SYSTEM_PROMPT }].concat(messages);
+
   try {
-    var groqRes = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }].concat(messages),
-        max_tokens: 512,
-        temperature: 0.6
-      })
-    });
-
-    if (!groqRes.ok) {
-      var detail = '';
-      try { detail = await groqRes.text(); } catch (err) { detail = ''; }
-      throw new Error('Groq error ' + groqRes.status + ': ' + detail.slice(0, 300));
-    }
-
-    var data = await groqRes.json();
     var reply = '';
-    if (data && Array.isArray(data.choices) && data.choices[0] &&
-        data.choices[0].message && typeof data.choices[0].message.content === 'string') {
-      reply = data.choices[0].message.content.trim();
+    for (var i = 0; i < 5; i++) {
+      var groqRes = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: conversation,
+          tools: tools.length ? tools : undefined,
+          tool_choice: tools.length ? 'auto' : undefined,
+          max_tokens: 512,
+          temperature: 0.6
+        })
+      });
+
+      if (!groqRes.ok) {
+        var detail = '';
+        try { detail = await groqRes.text(); } catch (err) { detail = ''; }
+        throw new Error('Groq error ' + groqRes.status + ': ' + detail.slice(0, 300));
+      }
+
+      var data = await groqRes.json();
+      var choice = (data && Array.isArray(data.choices) && data.choices[0]) ? data.choices[0] : null;
+      var msg = choice ? choice.message : null;
+
+      if (msg && Array.isArray(msg.tool_calls) && msg.tool_calls.length) {
+        conversation.push({
+          role: 'assistant',
+          content: (typeof msg.content === 'string') ? msg.content : null,
+          tool_calls: msg.tool_calls
+        });
+        for (var t = 0; t < msg.tool_calls.length; t++) {
+          var tc = msg.tool_calls[t];
+          var args = {};
+          try { args = JSON.parse((tc.function && tc.function.arguments) || '{}'); } catch (err) { args = {}; }
+          var result = await sendToCarlos(args);
+          conversation.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: JSON.stringify(result)
+          });
+        }
+        continue;
+      }
+
+      if (msg && typeof msg.content === 'string') {
+        reply = msg.content.trim();
+      }
+      break;
     }
+
     if (!reply) {
       return res.status(502).json({ ok: false, error: 'No response from chat service.' });
     }
