@@ -31,7 +31,17 @@
     panel.innerHTML =
       '<div class="chat-head">' +
       '  <div class="chat-head-title">Ask about Carlos</div>' +
-      '  <button type="button" class="chat-close" aria-label="Close chat">&times;</button>' +
+      '  <div class="chat-head-actions">' +
+      '    <button type="button" class="chat-voice" id="chatVoice" aria-label="Voice output on" aria-pressed="true" title="Voice output on">' +
+      '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M11 5 6 9H2v6h4l5 4z"/>' +
+      '<path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>' +
+      '<path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>' +
+      '</svg>' +
+      '    </button>' +
+      '    <button type="button" class="chat-close" aria-label="Close chat">&times;</button>' +
+      '  </div>' +
       '</div>' +
       '<div class="chat-messages" id="chatMessages"></div>' +
       '<form class="chat-form" id="chatForm">' +
@@ -60,6 +70,7 @@
     var input = panel.querySelector('#chatInput');
     var closeBtn = panel.querySelector('.chat-close');
     var micBtn = panel.querySelector('#chatMic');
+    var voiceBtn = panel.querySelector('#chatVoice');
 
     var history = [];
     var busy = false;
@@ -85,6 +96,8 @@
         micBtn.classList.add('listening');
         micBtn.setAttribute('aria-pressed', 'true');
         micBtn.setAttribute('aria-label', 'Stop voice input');
+        input.classList.add('listening');
+        input.placeholder = 'Listening... speak now';
       };
 
       recognition.onresult = function (e) {
@@ -109,6 +122,8 @@
         micBtn.classList.remove('listening');
         micBtn.setAttribute('aria-pressed', 'false');
         micBtn.setAttribute('aria-label', 'Start voice input');
+        input.classList.remove('listening');
+        input.placeholder = 'Type a message...';
 
         var shouldSend = !suppressAutoSend && !hadError && !busy &&
           panel.classList.contains('open') && input.value.trim() !== '';
@@ -146,6 +161,90 @@
         suppressAutoSend = true;
         recognition.stop();
       }
+    }
+
+    /* Voice output (TTS) via Web Speech Synthesis. Male English voice by default. */
+    var synth = window.speechSynthesis;
+    var chosenVoice = null;
+    var ttsEnabled = true;
+
+    try {
+      if (window.localStorage.getItem('chatVoiceOutput') === '0') ttsEnabled = false;
+    } catch (err) { /* storage unavailable */ }
+
+    function pickMaleVoice() {
+      if (!synth) return null;
+      var voices = synth.getVoices() || [];
+      if (!voices.length) return null;
+
+      var i;
+      var en = [];
+      for (i = 0; i < voices.length; i++) {
+        if (/^en/i.test(voices[i].lang)) en.push(voices[i]);
+      }
+      var pool = en.length ? en : voices;
+
+      var hints = ['google uk english male', 'david', 'mark', 'guy', 'daniel', 'alex', 'fred', 'rishi', 'oliver', 'george', 'james'];
+      for (var h = 0; h < hints.length; h++) {
+        for (i = 0; i < pool.length; i++) {
+          if (pool[i].name.toLowerCase().indexOf(hints[h]) !== -1) return pool[i];
+        }
+      }
+      for (i = 0; i < pool.length; i++) {
+        var n = pool[i].name.toLowerCase();
+        if (n.indexOf('male') !== -1 && n.indexOf('female') === -1) return pool[i];
+      }
+      return pool[0] || null;
+    }
+
+    function updateVoiceBtn() {
+      if (!voiceBtn) return;
+      voiceBtn.classList.toggle('off', !ttsEnabled);
+      voiceBtn.setAttribute('aria-pressed', ttsEnabled ? 'true' : 'false');
+      voiceBtn.setAttribute('aria-label', ttsEnabled ? 'Voice output on' : 'Voice output off');
+      voiceBtn.title = ttsEnabled ? 'Voice output on' : 'Voice output off';
+    }
+
+    function speak(text) {
+      if (!synth || !ttsEnabled || !text) return;
+      var clean = String(text)
+        .replace(/https?:\/\/\S+/gi, 'link')
+        .replace(/\*/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!clean) return;
+      try {
+        synth.cancel();
+        var utter = new SpeechSynthesisUtterance(clean);
+        if (chosenVoice) {
+          utter.voice = chosenVoice;
+          utter.lang = chosenVoice.lang;
+        } else {
+          utter.lang = 'en-US';
+        }
+        synth.speak(utter);
+      } catch (err) { /* speech unavailable */ }
+    }
+
+    if (!synth) {
+      voiceBtn.remove();
+      voiceBtn = null;
+    } else {
+      chosenVoice = pickMaleVoice();
+      if (typeof synth.addEventListener === 'function') {
+        synth.addEventListener('voiceschanged', function () { chosenVoice = pickMaleVoice(); });
+      } else {
+        synth.onvoiceschanged = function () { chosenVoice = pickMaleVoice(); };
+      }
+      updateVoiceBtn();
+      voiceBtn.addEventListener('click', function () {
+        ttsEnabled = !ttsEnabled;
+        try {
+          window.localStorage.setItem('chatVoiceOutput', ttsEnabled ? '1' : '0');
+        } catch (err) { /* ignore */ }
+        updateVoiceBtn();
+        if (!ttsEnabled) synth.cancel();
+      });
     }
 
     /* Known bare domains the assistant may mention without the https:// prefix. */
@@ -222,6 +321,7 @@
 
     function close() {
       stopListening();
+      if (synth) synth.cancel();
       panel.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
     }
@@ -262,6 +362,7 @@
           typing.remove();
           if (result.status >= 200 && result.status < 300 && result.data.ok && result.data.reply) {
             addBubble('assistant', result.data.reply);
+            speak(result.data.reply);
             openLinks(result.data.actions);
             history.push({ role: 'assistant', content: result.data.reply });
           } else {

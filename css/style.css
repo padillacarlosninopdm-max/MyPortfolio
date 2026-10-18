@@ -1261,6 +1261,19 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
   background: var(--surface-2);
 }
 .chat-head-title { font-weight: 600; color: var(--ink); }
+.chat-head-actions { display: flex; align-items: center; gap: 6px; }
+.chat-voice {
+  background: none;
+  border: 0;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+.chat-voice:hover { color: var(--ink); }
+.chat-voice svg { width: 18px; height: 18px; }
+.chat-voice.off { opacity: 0.4; }
 .chat-close {
   background: none;
   border: 0;
@@ -1336,6 +1349,10 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 }
 .chat-form input:focus {
   outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.chat-form input.listening {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--ring);
 }
