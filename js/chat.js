@@ -57,7 +57,10 @@
     function addBubble(role, text) {
       var bubble = doc.createElement('div');
       bubble.className = 'chat-bubble chat-' + role;
-      bubble.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+      bubble.innerHTML = escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*/g, '')
+        .replace(/\n/g, '<br>');
       messagesEl.appendChild(bubble);
       messagesEl.scrollTop = messagesEl.scrollHeight;
       return bubble;
@@ -99,8 +102,12 @@
       history.push({ role: 'user', content: text });
 
       setBusy(true);
-      var typing = addBubble('assistant', '...');
-      typing.classList.add('chat-typing');
+      var typing = doc.createElement('div');
+      typing.className = 'chat-bubble chat-assistant chat-typing';
+      typing.innerHTML =
+        '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+      messagesEl.appendChild(typing);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
 
       fetch('/api/chat', {
         method: 'POST',
