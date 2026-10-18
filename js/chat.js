@@ -427,16 +427,23 @@
 
     input.addEventListener('input', resizeInput);
 
+    var isTouch = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+      ('ontouchstart' in window);
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (busy) return;
-        if (input.value.trim() === '') return;
-        if (typeof form.requestSubmit === 'function') {
-          form.requestSubmit();
-        } else {
-          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-        }
+      /* On touch devices the keyboard's Enter/return key must create a new
+         line, not send; sending happens via the Send button. On desktop,
+         Enter sends and Shift+Enter creates a new line. Ctrl/Cmd+Enter
+         also sends on every device. */
+      var sendKey = (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) ||
+        (e.key === 'Enter' && !e.shiftKey && !isTouch);
+      if (!sendKey) return;
+      e.preventDefault();
+      if (busy) return;
+      if (input.value.trim() === '') return;
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
     });
 
