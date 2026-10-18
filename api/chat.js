@@ -16,7 +16,7 @@ var SITES = {
 
 var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
-  'Contact details: phone 09553764958; email padillacarlosnino.pdm@gmail.com; ' +
+  'Contact details: contact number 09553764958 (call or text); email padillacarlosnino.pdm@gmail.com; ' +
   'GitHub at https://github.com/padillacarlosninopdm-max; LinkedIn at https://linkedin.com/in/carlos-padilla-21b1243ba; ' +
   'portfolio at https://myportfolio-psi-three-54.vercel.app; resume at https://myportfolio-psi-three-54.vercel.app/resume.html. ' +
   'Education: Pambayang Dalubhasaan ng Marilao, BS Information Technology, 4th year, Marilao, Bulacan, ' +
