@@ -34,6 +34,8 @@ var SYSTEM_PROMPT =
   'Certificates: Learn AI and ChatGPT: Practical Skills for Work and Everyday Productivity ' +
   '(DICT, 2026, participation). No other certifications are listed yet. ' +
   'Project websites: Rentahanan at https://rentahanan.vercel.app/ and Solaris at https://www.solarisiot.com/. ' +
+  'If a visitor asks to receive or be emailed Carlos\'s resume or CV, use the send_resume_to_visitor tool; ' +
+  'collect the visitor name and email first if missing, and never send without an explicit request. ' +
   'If the visitor asks to open, view, show, or be redirected to the Rentahanan or Solaris website, ' +
   'call the open_website tool with the matching site; it opens in a new tab on their browser. ' +
   'Confirm briefly, for example: Opening the Solaris website in a new tab. ' +
@@ -104,6 +106,65 @@ function autoReplyHtml(name) {
     '<p style="margin:0;font-size:14px;line-height:1.65;color:#a9b8cd;">I received your message and will reply within a day or two.</p>' +
     '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
   );
+}
+
+function resumeEmailHtml(name) {
+  return emailShell(
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">RESUME REQUEST</p>' +
+    '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">Here is Carlos\'s resume, ' + escapeHtml(name) + '</h2>' +
+    '<p style="margin:0 0 16px;font-size:14px;line-height:1.65;color:#a9b8cd;">' +
+    'Thanks for your interest. The resume is attached to this email as a PDF. ' +
+    'You can also view or print it online at ' +
+    '<a href="https://myportfolio-psi-three-54.vercel.app/resume.html" style="color:#60a5fa;">' +
+    'https://myportfolio-psi-three-54.vercel.app/resume.html</a>.</p>' +
+    '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
+  );
+}
+
+function fetchResumeBase64() {
+  var baseUrl = process.env.VERCEL_URL
+    ? 'https://' + process.env.VERCEL_URL
+    : 'https://myportfolio-psi-three-54.vercel.app';
+  return fetch(baseUrl + '/Padilla-Carlos-Nino-Resume.pdf')
+    .then(function (res) {
+      if (!res.ok) throw new Error('resume fetch failed ' + res.status);
+      return res.arrayBuffer();
+    })
+    .then(function (buf) {
+      return Buffer.from(buf).toString('base64');
+    });
+}
+
+async function sendResumeToVisitor(args) {
+  var brevoKey = process.env.BREVO_API_KEY;
+  if (!brevoKey) return { ok: false, error: 'Email service is not configured.' };
+
+  var name = String((args && args.name) || '').trim().slice(0, 100);
+  var email = String((args && args.email) || '').trim().slice(0, 254);
+
+  if (!name || !isEmail(email)) {
+    return { ok: false, error: 'Missing or invalid name or email.' };
+  }
+
+  try {
+    var base64 = await fetchResumeBase64();
+    await sendEmail(brevoKey, {
+      sender: { name: OWNER_NAME, email: OWNER_EMAIL },
+      to: [{ email: email, name: name }],
+      subject: 'Carlos Nino Q. Padilla - Resume (PDF)',
+      htmlContent: resumeEmailHtml(name),
+      textContent:
+        'Hi ' + name + ',\n\n' +
+        'Attached is the resume of Carlos Nino Q. Padilla. ' +
+        'You can also view it online at https://myportfolio-psi-three-54.vercel.app/resume.html\n\n' +
+        'Best regards,\n' + OWNER_NAME,
+      attachment: [{ content: base64, name: 'Padilla-Carlos-Nino-Resume.pdf' }]
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error('resume send error:', err.message);
+    return { ok: false, error: 'Could not send the resume. Please try again later.' };
+  }
 }
 
 function composedTextHtml(name, email, subject, content) {
@@ -213,6 +274,23 @@ async function sendComposedText(args) {
   }
 }
 
+function composedTextHtml(name, email, subject, content) {
+  var safeName = escapeHtml(name);
+  var safeEmail = escapeHtml(email);
+  var safeSubject = escapeHtml(subject).replace(/\n/g, ' ');
+  var safeContent = escapeHtml(content).replace(/\n/g, '<br>');
+  return emailShell(
+    '<p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:2px;color:#60a5fa;">AI COMPOSED TEXT</p>' +
+    '<h2 style="margin:0 0 16px;font-size:22px;color:#e9eff9;">' + safeSubject + '</h2>' +
+    '<p style="margin:0 0 6px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">From:</strong> ' + safeName + '</p>' +
+    '<p style="margin:0 0 16px;font-size:14px;color:#a9b8cd;"><strong style="color:#e9eff9;">Email:</strong> ' +
+    '<a href="mailto:' + safeEmail + '" style="color:#60a5fa;">' + safeEmail + '</a></p>' +
+    '<div style="background-color:#0a1020;border:1px solid #1f2b45;border-radius:8px;padding:16px;">' +
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:#e9eff9;">' + safeContent + '</p>' +
+    '</div>'
+  );
+}
+
 var tools = [{
   type: 'function',
   function: {
@@ -264,6 +342,21 @@ if (process.env.BREVO_API_KEY) {
           content: { type: 'string', description: 'The exact composed text to email' }
         },
         required: ['name', 'email', 'subject', 'content']
+      }
+    }
+  });
+  tools.push({
+    type: 'function',
+    function: {
+      name: 'send_resume_to_visitor',
+      description: 'Email Carlos Padilla\'s resume PDF to a visitor. Use only when the visitor explicitly asks to receive or be sent Carlos\'s resume/CV and has provided their name and email.',
+      parameters: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Visitor name' },
+          email: { type: 'string', description: 'Visitor email' }
+        },
+        required: ['name', 'email']
       }
     }
   });
@@ -382,8 +475,8 @@ module.exports = async function handler(req, res) {
             }
           } else if (fnName === 'send_message_to_carlos') {
             result = await sendToCarlos(args);
-          } else if (fnName === 'send_composed_text') {
-            result = await sendComposedText(args);
+          } else if (fnName === 'send_resume_to_visitor') {
+            result = await sendResumeToVisitor(args);
           } else {
             result = { ok: false, error: 'Unknown tool.' };
           }
