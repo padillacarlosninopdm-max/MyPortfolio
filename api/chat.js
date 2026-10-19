@@ -1,12 +1,33 @@
 'use strict';
 
-var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-var MODEL = 'qwen/qwen3.8-27b';
 var MAX_MESSAGES = 20;
 var MAX_LEN = 2000;
 var BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
 var OWNER_EMAIL = 'padillacarlosnino.pdm@gmail.com';
 var OWNER_NAME = 'Carlos Nino Q. Padilla';
+var MODEL = 'qwen/qwen3.8-27b';
+
+/* Providers are tried in order: the first is primary, the rest are fallbacks.
+   Keys live only in environment variables (Vercel), never in the repo. */
+var PROVIDERS = [];
+if (process.env.ITERACOMPUTE_API_KEY) {
+  PROVIDERS.push({
+    name: 'iteracompute',
+    url: 'https://api.iteracompute.com/v1/chat/completions',
+    model: MODEL,
+    apiKey: process.env.ITERACOMPUTE_API_KEY,
+    extra: { chat_template_kwargs: { enable_thinking: false } }
+  });
+}
+if (process.env.GROQ_API_KEY) {
+  PROVIDERS.push({
+    name: 'groq',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: MODEL,
+    apiKey: process.env.GROQ_API_KEY,
+    extra: {}
+  });
+}
 
 /* Whitelisted project sites the chatbot may open for the visitor. */
 var SITES = {
@@ -396,14 +417,78 @@ if (process.env.BREVO_API_KEY) {
   });
 }
 
+function sleep(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+/* One chat-completion call to a single provider, retrying briefly on 429.
+   Returns { ok, status, data, error }; never throws on HTTP/network errors. */
+async function chatCompletion(provider, conversation, toolList) {
+  var attempts = 0;
+  var lastStatus = 0;
+  var lastError = '';
+
+  while (attempts < 3) {
+    var body = {
+      model: provider.model,
+      messages: conversation,
+      tools: toolList.length ? toolList : undefined,
+      tool_choice: toolList.length ? 'auto' : undefined,
+      max_tokens: 384,
+      temperature: 0.6
+    };
+    Object.assign(body, provider.extra);
+
+    var res;
+    try {
+      res = await fetch(provider.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + provider.apiKey
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (err) {
+      return { ok: false, status: 0, error: 'network: ' + err.message };
+    }
+
+    lastStatus = res.status;
+
+    if (res.status === 429) {
+      var retryAfter = parseInt(res.headers.get('retry-after') || '', 10);
+      var wait = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * (attempts + 1);
+      if (wait > 6000) wait = 6000;
+      lastError = 'rate limited';
+      await sleep(wait);
+      attempts++;
+      continue;
+    }
+
+    var detail = '';
+    try { detail = await res.text(); } catch (err) { detail = ''; }
+
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: detail.slice(0, 300) };
+    }
+
+    var data;
+    try { data = JSON.parse(detail); } catch (err) {
+      return { ok: false, status: res.status, error: 'invalid JSON: ' + detail.slice(0, 200) };
+    }
+    return { ok: true, status: res.status, data: data };
+  }
+
+  return { ok: false, status: lastStatus || 429, error: lastError || 'rate limited' };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'Method not allowed.' });
   }
 
-  var apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
+  if (!PROVIDERS.length) {
     return res.status(500).json({ ok: false, error: 'Chat service is not configured.' });
   }
 
@@ -422,115 +507,98 @@ module.exports = async function handler(req, res) {
 
   var conversation = [{ role: 'system', content: SYSTEM_PROMPT }].concat(messages);
 
-  function sleep(ms) {
-    return new Promise(function (resolve) { setTimeout(resolve, ms); });
-  }
-
   try {
     var reply = '';
     var actions = [];
-    var rateLimited = false;
-    for (var i = 0; i < 3; i++) {
-      var groqRes = null;
-      var attempts = 0;
-      while (attempts < 3) {
-        groqRes = await fetch(GROQ_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + apiKey
-          },
-          body: JSON.stringify({
-            model: MODEL,
-            messages: conversation,
-            tools: tools.length ? tools : undefined,
-            tool_choice: tools.length ? 'auto' : undefined,
-            max_tokens: 384,
-            temperature: 0.6
-          })
-        });
+    var lastError = null;
 
-        if (groqRes.status === 429) {
-          rateLimited = true;
-          var retryAfter = parseInt(groqRes.headers.get('retry-after') || '', 10);
-          var wait = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * (attempts + 1);
-          if (wait > 6000) wait = 6000;
-          await sleep(wait);
-          attempts++;
+    /* Each round asks the providers in order (primary first). A provider that
+       fails or returns empty hands the round to the next one. */
+    outer:
+    for (var round = 0; round < 3; round++) {
+      var gotToolCall = false;
+      var gotReply = false;
+
+      for (var p = 0; p < PROVIDERS.length; p++) {
+        var provider = PROVIDERS[p];
+        var result = await chatCompletion(provider, conversation, tools);
+
+        if (!result.ok) {
+          console.error('chat error:', provider.name, result.status, result.error);
+          lastError = result;
           continue;
         }
-        break;
-      }
 
-      if (!groqRes || !groqRes.ok) {
-        var detail = '';
-        try { detail = groqRes ? await groqRes.text() : ''; } catch (err) { detail = ''; }
-        var status = groqRes ? groqRes.status : 0;
-        console.error('chat error:', status, detail.slice(0, 300));
-        if (status === 429) {
-          return res.status(429).json({
-            ok: false,
-            error: 'I am getting a lot of requests right now. Please try again in a few seconds.'
-          });
-        }
-        if (status >= 500) {
-          return res.status(502).json({
-            ok: false,
-            error: 'The assistant is temporarily unavailable. Please try again shortly.'
-          });
-        }
-        throw new Error('Groq error ' + status + ': ' + detail.slice(0, 300));
-      }
-      rateLimited = false;
+        var data = result.data;
+        var choice = (data && Array.isArray(data.choices) && data.choices[0]) ? data.choices[0] : null;
+        var msg = choice ? choice.message : null;
 
-      var data = await groqRes.json();
-      var choice = (data && Array.isArray(data.choices) && data.choices[0]) ? data.choices[0] : null;
-      var msg = choice ? choice.message : null;
-
-      if (msg && Array.isArray(msg.tool_calls) && msg.tool_calls.length) {
-        conversation.push({
-          role: 'assistant',
-          content: (typeof msg.content === 'string') ? msg.content : null,
-          tool_calls: msg.tool_calls
-        });
-        for (var t = 0; t < msg.tool_calls.length; t++) {
-          var tc = msg.tool_calls[t];
-          var args = {};
-          try { args = JSON.parse((tc.function && tc.function.arguments) || '{}'); } catch (err) { args = {}; }
-          var fnName = (tc.function && tc.function.name) || '';
-          var result;
-          if (fnName === 'open_website') {
-            var site = SITES[String(args.site || '').toLowerCase()];
-            if (site) {
-              actions.push({ type: 'open_link', url: site.url, label: site.label });
-              result = { ok: true, opened: site.url };
-            } else {
-              result = { ok: false, error: 'Unknown website.' };
-            }
-          } else if (fnName === 'send_message_to_carlos') {
-            result = await sendToCarlos(args);
-          } else if (fnName === 'send_resume_to_visitor') {
-            result = await sendResumeToVisitor(args);
-          } else {
-            result = { ok: false, error: 'Unknown tool.' };
-          }
+        if (msg && Array.isArray(msg.tool_calls) && msg.tool_calls.length) {
           conversation.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            content: JSON.stringify(result)
+            role: 'assistant',
+            content: (typeof msg.content === 'string') ? msg.content : null,
+            tool_calls: msg.tool_calls
           });
+          for (var t = 0; t < msg.tool_calls.length; t++) {
+            var tc = msg.tool_calls[t];
+            var args = {};
+            try { args = JSON.parse((tc.function && tc.function.arguments) || '{}'); } catch (err) { args = {}; }
+            var fnName = (tc.function && tc.function.name) || '';
+            var toolResult;
+            if (fnName === 'open_website') {
+              var site = SITES[String(args.site || '').toLowerCase()];
+              if (site) {
+                actions.push({ type: 'open_link', url: site.url, label: site.label });
+                toolResult = { ok: true, opened: site.url };
+              } else {
+                toolResult = { ok: false, error: 'Unknown website.' };
+              }
+            } else if (fnName === 'send_message_to_carlos') {
+              toolResult = await sendToCarlos(args);
+            } else if (fnName === 'send_composed_text') {
+              toolResult = await sendComposedText(args);
+            } else if (fnName === 'send_resume_to_visitor') {
+              toolResult = await sendResumeToVisitor(args);
+            } else {
+              toolResult = { ok: false, error: 'Unknown tool.' };
+            }
+            conversation.push({
+              role: 'tool',
+              tool_call_id: tc.id,
+              content: JSON.stringify(toolResult)
+            });
+          }
+          gotToolCall = true;
+          break;
         }
-        continue;
+
+        if (msg && typeof msg.content === 'string' && msg.content.trim()) {
+          reply = msg.content.trim();
+          gotReply = true;
+          break;
+        }
+
+        console.error('chat: empty reply from', provider.name);
+        lastError = { ok: false, status: 200, error: 'empty reply from ' + provider.name };
       }
 
-      if (msg && typeof msg.content === 'string') {
-        reply = msg.content.trim();
-      }
+      if (gotReply) break outer;
+      if (gotToolCall) continue;
       break;
     }
 
     if (!reply) {
-      return res.status(502).json({ ok: false, error: 'The assistant is temporarily unavailable. Please try again shortly.' });
+      if (lastError && lastError.status === 429) {
+        return res.status(429).json({
+          ok: false,
+          error: 'I am getting a lot of requests right now. Please try again in a few seconds.'
+        });
+      }
+      console.error('chat: no reply, last error:', lastError);
+      return res.status(502).json({
+        ok: false,
+        error: 'The assistant is temporarily unavailable. Please try again shortly.'
+      });
     }
 
     return res.status(200).json({ ok: true, reply: reply, actions: actions });
