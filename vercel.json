@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/chat.js": {
+      "includeFiles": "Padilla-Carlos-Nino-Resume.pdf"
+    }
+  }
+}

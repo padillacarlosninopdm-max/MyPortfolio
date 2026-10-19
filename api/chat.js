@@ -36,6 +36,7 @@ var SYSTEM_PROMPT =
   'Project websites: Rentahanan at https://rentahanan.vercel.app/ and Solaris at https://www.solarisiot.com/. ' +
   'If a visitor asks to receive or be emailed Carlos\'s resume or CV, use the send_resume_to_visitor tool; ' +
   'collect the visitor name and email first if missing, and never send without an explicit request. ' +
+  'If the tool returns an error starting with UNAVAILABLE, quote that message verbatim to the user. ' +
   'After sending, confirm the PDF was attached and also share the direct download link ' +
   'https://myportfolio-psi-three-54.vercel.app/Padilla-Carlos-Nino-Resume.pdf. ' +
   'If the visitor asks to open, view, show, or be redirected to the Rentahanan or Solaris website, ' +
@@ -124,22 +125,43 @@ function resumeEmailHtml(name) {
 }
 
 function fetchResumeBase64() {
+  var fs = require('fs');
+  var path = require('path');
+
+  // 1) Try reading from the deployed filesystem (Vercel bundles includeFiles).
+  var candidates = [
+    path.join(process.cwd(), 'Padilla-Carlos-Nino-Resume.pdf'),
+    path.join(__dirname, '..', 'Padilla-Carlos-Nino-Resume.pdf'),
+    path.join(__dirname, 'Padilla-Carlos-Nino-Resume.pdf')
+  ];
+  for (var i = 0; i < candidates.length; i++) {
+    try {
+      if (fs.existsSync(candidates[i])) {
+        var buf = fs.readFileSync(candidates[i]);
+        var magic = buf.slice(0, 4).toString('ascii');
+        if (magic === '%PDF') {
+          return Promise.resolve({ base64: buf.toString('base64'), size: buf.length, source: 'fs:' + candidates[i] });
+        }
+      }
+    } catch (e) { /* try next */ }
+  }
+
+  // 2) Fall back to fetching over HTTP from the deployed site.
   var baseUrl = process.env.VERCEL_URL
     ? 'https://' + process.env.VERCEL_URL
     : 'https://myportfolio-psi-three-54.vercel.app';
   return fetch(baseUrl + '/Padilla-Carlos-Nino-Resume.pdf')
     .then(function (res) {
-      if (!res.ok) throw new Error('resume fetch failed ' + res.status);
+      if (!res.ok) throw new Error('http ' + res.status);
       return res.arrayBuffer();
     })
-    .then(function (buf) {
-      var bytes = new Uint8Array(buf);
-      // Validate it is actually a PDF before encoding.
+    .then(function (ab) {
+      var bytes = new Uint8Array(ab);
       var magic = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]);
       if (magic !== '%PDF') {
-        throw new Error('fetched file is not a PDF (magic=' + magic + ', len=' + bytes.length + ')');
+        throw new Error('not a PDF (magic=' + magic + ', len=' + bytes.length + ')');
       }
-      return { base64: Buffer.from(bytes).toString('base64'), size: bytes.length };
+      return { base64: Buffer.from(bytes).toString('base64'), size: bytes.length, source: 'http' };
     });
 }
 
@@ -171,7 +193,7 @@ async function sendResumeToVisitor(args) {
         'Best regards,\n' + OWNER_NAME,
       attachment: [{ content: base64, name: 'Padilla-Carlos-Nino-Resume.pdf' }]
     });
-    return { ok: true, size: fetched.size };
+    return { ok: true, size: fetched.size, source: fetched.source };
   } catch (err) {
     console.error('resume send error:', err.message);
     return { ok: false, error: 'Could not send the resume: ' + err.message };
