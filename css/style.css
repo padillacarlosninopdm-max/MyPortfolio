@@ -1285,11 +1285,13 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 [data-theme="light"] .shot-center figcaption,
 [data-theme="light"] .shot:hover figcaption { color: var(--primary); }
 
-/* Chat widget: readable icon/text on the darker blue buttons. */
+/* Chat widget: readable icon/text on the darker blue buttons. The idle mic
+   sits on a light surface, so it keeps the dark ink colour instead of white. */
 [data-theme="light"] .chat-toggle,
 [data-theme="light"] .chat-user,
-[data-theme="light"] .chat-form button,
+[data-theme="light"] .chat-form button[type="submit"],
 [data-theme="light"] .chat-form .chat-mic.listening { color: #fff; }
+[data-theme="light"] .chat-form .chat-mic { color: var(--ink-soft); }
 
 /* ---------- Certificates ---------- */
 .cert-grid {
