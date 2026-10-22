@@ -375,26 +375,13 @@ a.btn-pending { pointer-events: none; }
   z-index: 0;
 }
 
-.hero-monogram {
+.hero-figure img {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.12em;
-  font-family: var(--font-display);
-  font-size: clamp(3.4rem, 9vw, 5.8rem);
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  color: #fff;
-  text-shadow: 0 20px 36px rgba(0, 0, 0, 0.35);
-  user-select: none;
-}
-.hero-monogram .mono-bracket {
-  color: var(--accent);
-  font-weight: 700;
-  transform: translateY(-0.04em);
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.45));
 }
 
 /* Short about-me paragraph in the hero. */
@@ -416,7 +403,7 @@ a.btn-pending { pointer-events: none; }
   .hero-cta, .hero-meta { justify-content: center; }
   .hero-role { margin-inline: auto; }
   .hero-figure { min-height: 360px; order: -1; }
-  .hero-monogram { font-size: clamp(2.8rem, 13vw, 4rem); }
+  .hero-figure img { max-width: 300px; }
 
 }
 
@@ -1259,8 +1246,8 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 /* ---------- Light theme component overrides ----------
    Only for the handful of spots that hard-code dark colours instead of
    reading tokens. Everything else re-themes through the tokens above. */
-[data-theme="light"] .hero-monogram {
-  text-shadow: 0 20px 36px rgba(15, 23, 42, 0.22);
+[data-theme="light"] .hero-figure img {
+  filter: drop-shadow(0 24px 30px rgba(15, 23, 42, 0.22));
 }
 [data-theme="light"] .btn-primary,
 [data-theme="light"] .to-top { color: #fff; }

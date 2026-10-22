@@ -9,11 +9,15 @@ resume.html         A4 printable résumé (click "Print / Save as PDF")
 css/style.css       portfolio styles
 css/resume.css      résumé + print styles
 js/main.js          theme, nav, scroll effects, form
+assets/cutout.png           transparent hero cutout (remove.bg export)
+assets/photo-512.jpg        circular crop (résumé)
+assets/photo-1024.jpg       circular crop (résumé, high-res)
 assets/solar-*.jpg          Project 01 screenshots (web)
 assets/app-*.jpg            Project 02 screenshots (mobile)
 assets/rent-*.jpg           Project 03 screenshots (Rentahanan)
 assets/cert-*.svg           certificate placeholders
 assets/favicon.svg
+profileojt.png      your remove.bg cutout, kept as the source for assets/cutout.png
 web solaris\        original web screenshots (1080p, kept as sources)
 apk solaris\        original app screenshots (1080p, kept as sources)
 rentahanan\        original Rentahanan screenshots (~690px, kept as sources)
@@ -35,14 +39,30 @@ py -3 -m http.server 8000
 
 then open <http://localhost:8000>.
 
-## Hero visual
+## Your photo
 
-The hero uses a **CNP monogram** on the gradient arch (`.figure-blob`) instead of a
-personal photo. There is no portrait image in the project, so no face is published with
-the site.
+`assets/cutout.png` is the **transparent-background cutout** used in the hero, sitting on
+a gradient arch shape (`.figure-blob`). It came from your
+remove.bg export — saved in the project folder as `profileojt.png`, 452×552, 32-bit ARGB.
 
-To use a different brand mark, edit the `.hero-monogram` block in `index.html` and the
-matching styles in `css/style.css`.
+**Use a real cutout, not the white-background original.** The hero has a solid shape
+directly behind the figure, so any background that survives shows up as a coloured patch
+at the neck and collar. That is exactly what happened with a white-background version.
+
+An earlier attempt at generating the cutout automatically (flood fill from the image
+border, de-fringe, then close interior channels) was abandoned. The white shirt measures
+the same white as the backdrop, so only connectivity separates them, and the photo has a
+genuine strip of backdrop between the neck and the collar that has to be closed. Widening
+the close to catch it also painted over the legitimate background pockets between the
+head and the shoulders, leaving pale vertical strips and a smeared shirt. remove.bg
+handles all of that correctly — no need to re-derive it.
+
+`assets/photo-512.jpg` and `assets/photo-1024.jpg` are separate circular crops used only
+by the résumé (a printed résumé wants the white background, not a cutout).
+
+To swap in a new photo, replace `assets/cutout.png` and update the `width`/`height`
+attributes on the hero `<img>` — they're only there to stop the page reflowing while the
+image loads, so wrong values cause a visible jump.
 
 ---
 
@@ -176,11 +196,11 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 - **Dark by default, with a light theme** — dark tokens live in `:root`, light tokens in
   `[data-theme="light"]`, flipped by the header toggle (`#themeToggle`) and remembered in
   `localStorage`. The résumé stays light on purpose, since a résumé has to print on white paper.
-- **Hero** uses a monogram layout: `Hello !` tag → "I'm" + your name in blue and
-  underlined → role headline → an intro card (`.hero-note`) → two buttons, with a CNP
-  monogram on a gradient arch. `.hero-figure` holds the monogram and `.figure-blob` is the
-  shape behind it — nudge that shape's `top` / `width` / `aspect-ratio` if you change the
-  mark.
+- **Hero** follows a cutout-portfolio layout: `Hello !` tag → "I'm" + your name in blue and
+  underlined → role headline → an intro card (`.hero-note`) → two buttons, with your cutout
+  on a gradient arch. `.hero-figure` holds the cutout and `.figure-blob` is the shape behind
+  it — nudge that shape's `top` / `width` / `aspect-ratio` if you swap in a photo with a
+  different pose.
 - **Palette:** navy `#1e40af` primary, amber `#f59e0b` accent (a nod to the solar work),
   ink `#14181f`. Swap them in the `:root` block at the top of `css/style.css`.
 - **Fonts** are Sora (headings), Inter (body), JetBrains Mono (skill chips) from Google
