@@ -1042,23 +1042,11 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 .showcase .shot + .shot   { margin-left: -70px; }
 .showcase .shot-center    { margin-left: -40px; }
 
-/* Flat showcase: three equal cards, centered, no fan/overlap. Used when the
-   three images are separate screenshots rather than a fanned stack. */
-.showcase-flat {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  padding: 34px 24px;
-}
-.showcase-flat .shot + .shot { margin-left: 0; }
-.showcase-flat .shot-center { margin-left: 0; z-index: 1; }
-.showcase-flat .shot-left .shot-frame,
-.showcase-flat .shot-right .shot-frame,
-.showcase-flat .shot-center .shot-frame {
-  transform: none;
-}
-.showcase-flat .shot figcaption { color: var(--ink-soft); }
-.showcase-flat .shot:hover .shot-frame { transform: translateY(-4px); }
 
+
+/* Project 3's third shot is a login screen: keep the fanned layout but
+   straighten that one card so the page reads upright. */
+#project-3 .shot-right .shot-frame { transform: none; }
 /* Hover brings a card forward and straightens it */
 .shot:hover { z-index: 6; }
 .shot:hover .shot-frame {
