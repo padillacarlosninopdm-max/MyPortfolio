@@ -1044,9 +1044,6 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 
 
 
-/* Project 3's third shot is a login screen: keep the fanned layout but
-   straighten that one card so the page reads upright. */
-#project-3 .shot-right .shot-frame { transform: none; }
 /* Hover brings a card forward and straightens it */
 .shot:hover { z-index: 6; }
 .shot:hover .shot-frame {
