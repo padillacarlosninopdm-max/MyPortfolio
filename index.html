@@ -22,9 +22,8 @@
     var stored = localStorage.getItem('theme');
     if (stored === 'light' || stored === 'dark') {
       theme = stored;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      theme = 'light';
     }
+    // Dark mode is the default; do not follow the OS light preference.
   } catch (e) { /* private mode: stay dark */ }
   document.documentElement.setAttribute('data-theme', theme);
   var meta = document.querySelector('meta[name="theme-color"]');
