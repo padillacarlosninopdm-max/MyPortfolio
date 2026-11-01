@@ -31,7 +31,7 @@ var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
   'Contact details: contact number 09553764958 (call or text); email padillacarlosnino.pdm@gmail.com; ' +
   'GitHub at https://github.com/padillacarlosninopdm-max; LinkedIn at https://linkedin.com/in/carlos-padilla-21b1243ba; ' +
-  'portfolio at https://carlos-padilla-portfolio.vercel.app; resume at https://carlos-padilla-portfolio.vercel.app/resume.html. ' +
+  'portfolio at https://www.carlospadilla.tech; resume at https://www.carlospadilla.tech/resume.html. ' +
   'Education: Pambayang Dalubhasaan ng Marilao, BS Information Technology, 4th year, Marilao, Bulacan, ' +
   'expected graduation 2027. Aspiring Frontend Developer and Quality Assurance, open to OJT. ' +
   'Profile: hands-on frontend development and software QA, React and Flutter interfaces, testing and defect logging. ' +
@@ -51,7 +51,7 @@ var SYSTEM_PROMPT =
   'collect the visitor name and email first if missing, and never send without an explicit request. ' +
   'If the tool returns an error starting with UNAVAILABLE, quote that message verbatim to the user. ' +
   'After sending, confirm the PDF was attached and also share the direct download link ' +
-  'https://carlos-padilla-portfolio.vercel.app/Padilla-Carlos-Nino-Resume.pdf. ' +
+  'https://www.carlospadilla.tech/Padilla-Carlos-Nino-Resume.pdf. ' +
   'If the visitor asks to open, view, show, or be redirected to the Rentahanan, Solaris, or GawaWeb website, ' +
   'call the open_website tool with the matching site; it opens in a new tab on their browser. ' +
   'Confirm briefly, for example: Opening the Solaris website in a new tab. ' +
@@ -131,8 +131,8 @@ function resumeEmailHtml(name) {
     '<p style="margin:0 0 16px;font-size:14px;line-height:1.65;color:#a9b8cd;">' +
     'Thanks for your interest. The resume is attached to this email as a PDF. ' +
     'You can also view or print it online at ' +
-    '<a href="https://carlos-padilla-portfolio.vercel.app/resume.html" style="color:#60a5fa;">' +
-    'https://carlos-padilla-portfolio.vercel.app/resume.html</a>.</p>' +
+    '<a href="https://www.carlospadilla.tech/resume.html" style="color:#60a5fa;">' +
+    'https://www.carlospadilla.tech/resume.html</a>.</p>' +
     '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
   );
 }
@@ -162,7 +162,7 @@ function fetchResumeBase64() {
   // 2) Fall back to fetching over HTTP from the deployed site.
   var baseUrl = process.env.VERCEL_URL
     ? 'https://' + process.env.VERCEL_URL
-    : 'https://carlos-padilla-portfolio.vercel.app';
+    : 'https://www.carlospadilla.tech';
   return fetch(baseUrl + '/Padilla-Carlos-Nino-Resume.pdf')
     .then(function (res) {
       if (!res.ok) throw new Error('http ' + res.status);
@@ -201,8 +201,8 @@ async function sendResumeToVisitor(args) {
       textContent:
         'Hi ' + name + ',\n\n' +
         'Attached is the resume of Carlos Nino Q. Padilla (' + fetched.size + ' bytes). ' +
-        'You can also download it directly at https://carlos-padilla-portfolio.vercel.app/Padilla-Carlos-Nino-Resume.pdf ' +
-        'or view it online at https://carlos-padilla-portfolio.vercel.app/resume.html\n\n' +
+        'You can also download it directly at https://www.carlospadilla.tech/Padilla-Carlos-Nino-Resume.pdf ' +
+        'or view it online at https://www.carlospadilla.tech/resume.html\n\n' +
         'Best regards,\n' + OWNER_NAME,
       attachment: [{ content: base64, name: 'Padilla-Carlos-Nino-Resume.pdf' }]
     });

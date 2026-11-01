@@ -295,7 +295,7 @@
     }
 
     /* Known bare domains the assistant may mention without the https:// prefix. */
-    var BARE_LINK = '\\b(?:www\\.)?(?:github\\.com|linkedin\\.com|solarisiot\\.com|rentahanan\\.vercel\\.app|gawa-web\\.my\\.id|carlos-padilla-portfolio\\.vercel\\.app)\\/[^\\s<"\']+';
+    var BARE_LINK = '\\b(?:www\\.)?(?:github\\.com|linkedin\\.com|solarisiot\\.com|rentahanan\\.vercel\\.app|gawa-web\\.my\\.id|carlospadilla\\.tech)\\/[^\\s<"\']+';
 
     function linkify(escaped) {
       var re = new RegExp('(https?:\\/\\/[^\\s<"\']+)|(' + BARE_LINK + ')', 'g');
