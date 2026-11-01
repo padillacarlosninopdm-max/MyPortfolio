@@ -23,14 +23,15 @@ if (process.env.GROQ_API_KEY) {
 /* Whitelisted project sites the chatbot may open for the visitor. */
 var SITES = {
   rentahanan: { url: 'https://rentahanan.vercel.app/', label: 'Rentahanan' },
-  solaris: { url: 'https://www.solarisiot.com/', label: 'Solaris' }
+  solaris: { url: 'https://www.solarisiot.com/', label: 'Solaris' },
+  gawaweb: { url: 'https://www.gawa-web.my.id/', label: 'GawaWeb' }
 };
 
 var SYSTEM_PROMPT =
   'You are a helpful assistant on the portfolio website of Carlos Nino Q. Padilla. ' +
   'Contact details: contact number 09553764958 (call or text); email padillacarlosnino.pdm@gmail.com; ' +
   'GitHub at https://github.com/padillacarlosninopdm-max; LinkedIn at https://linkedin.com/in/carlos-padilla-21b1243ba; ' +
-  'portfolio at https://myportfolio-psi-three-54.vercel.app; resume at https://myportfolio-psi-three-54.vercel.app/resume.html. ' +
+  'portfolio at https://carlos-padilla-portfolio.vercel.app; resume at https://carlos-padilla-portfolio.vercel.app/resume.html. ' +
   'Education: Pambayang Dalubhasaan ng Marilao, BS Information Technology, 4th year, Marilao, Bulacan, ' +
   'expected graduation 2027. Aspiring Frontend Developer and Quality Assurance, open to OJT. ' +
   'Profile: hands-on frontend development and software QA, React and Flutter interfaces, testing and defect logging. ' +
@@ -45,13 +46,13 @@ var SYSTEM_PROMPT =
   'Git Happens (PDM CSS/CS Department, 2026). ' +
   'Certificates: Learn AI and ChatGPT: Practical Skills for Work and Everyday Productivity ' +
   '(DICT, 2026, participation). No other certifications are listed yet. ' +
-  'Project websites: Rentahanan at https://rentahanan.vercel.app/ and Solaris at https://www.solarisiot.com/. ' +
+  'Project websites: Rentahanan at https://rentahanan.vercel.app/, Solaris at https://www.solarisiot.com/, and GawaWeb at https://www.gawa-web.my.id/. ' +
   'If a visitor asks to receive or be emailed Carlos\'s resume or CV, use the send_resume_to_visitor tool; ' +
   'collect the visitor name and email first if missing, and never send without an explicit request. ' +
   'If the tool returns an error starting with UNAVAILABLE, quote that message verbatim to the user. ' +
   'After sending, confirm the PDF was attached and also share the direct download link ' +
-  'https://myportfolio-psi-three-54.vercel.app/Padilla-Carlos-Nino-Resume.pdf. ' +
-  'If the visitor asks to open, view, show, or be redirected to the Rentahanan or Solaris website, ' +
+  'https://carlos-padilla-portfolio.vercel.app/Padilla-Carlos-Nino-Resume.pdf. ' +
+  'If the visitor asks to open, view, show, or be redirected to the Rentahanan, Solaris, or GawaWeb website, ' +
   'call the open_website tool with the matching site; it opens in a new tab on their browser. ' +
   'Confirm briefly, for example: Opening the Solaris website in a new tab. ' +
   'If the visitor explicitly asks to send a message to Carlos, use the send_message_to_carlos tool. ' +
@@ -130,8 +131,8 @@ function resumeEmailHtml(name) {
     '<p style="margin:0 0 16px;font-size:14px;line-height:1.65;color:#a9b8cd;">' +
     'Thanks for your interest. The resume is attached to this email as a PDF. ' +
     'You can also view or print it online at ' +
-    '<a href="https://myportfolio-psi-three-54.vercel.app/resume.html" style="color:#60a5fa;">' +
-    'https://myportfolio-psi-three-54.vercel.app/resume.html</a>.</p>' +
+    '<a href="https://carlos-padilla-portfolio.vercel.app/resume.html" style="color:#60a5fa;">' +
+    'https://carlos-padilla-portfolio.vercel.app/resume.html</a>.</p>' +
     '<p style="margin:16px 0 0;font-size:14px;color:#e9eff9;">Best regards,<br>Carlos Nino Q. Padilla</p>'
   );
 }
@@ -161,7 +162,7 @@ function fetchResumeBase64() {
   // 2) Fall back to fetching over HTTP from the deployed site.
   var baseUrl = process.env.VERCEL_URL
     ? 'https://' + process.env.VERCEL_URL
-    : 'https://myportfolio-psi-three-54.vercel.app';
+    : 'https://carlos-padilla-portfolio.vercel.app';
   return fetch(baseUrl + '/Padilla-Carlos-Nino-Resume.pdf')
     .then(function (res) {
       if (!res.ok) throw new Error('http ' + res.status);
@@ -200,8 +201,8 @@ async function sendResumeToVisitor(args) {
       textContent:
         'Hi ' + name + ',\n\n' +
         'Attached is the resume of Carlos Nino Q. Padilla (' + fetched.size + ' bytes). ' +
-        'You can also download it directly at https://myportfolio-psi-three-54.vercel.app/Padilla-Carlos-Nino-Resume.pdf ' +
-        'or view it online at https://myportfolio-psi-three-54.vercel.app/resume.html\n\n' +
+        'You can also download it directly at https://carlos-padilla-portfolio.vercel.app/Padilla-Carlos-Nino-Resume.pdf ' +
+        'or view it online at https://carlos-padilla-portfolio.vercel.app/resume.html\n\n' +
         'Best regards,\n' + OWNER_NAME,
       attachment: [{ content: base64, name: 'Padilla-Carlos-Nino-Resume.pdf' }]
     });
@@ -347,7 +348,7 @@ var tools = [{
       properties: {
         site: {
           type: 'string',
-          enum: ['rentahanan', 'solaris'],
+          enum: ['rentahanan', 'solaris', 'gawaweb'],
           description: 'Which project website to open'
         }
       },
