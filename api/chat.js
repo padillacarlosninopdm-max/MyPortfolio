@@ -40,7 +40,7 @@ var SYSTEM_PROMPT =
   'React web app and Flutter mobile app on Node.js/Express/MongoDB REST API; PayMongo; Vercel/Render. Team project: front end and QA. ' +
   '2) Rentahanan - web tenant admission and billing management system for local rental houses; React, SQLAlchemy, MySQL, REST API. ' +
   'Team project: mostly front end with minor backend, plus QA. ' +
-  '3) Celevation - LAN-based event management system; C# WinForms, MySQL/MariaDB. Team project: mostly front end with minor backend, plus QA. ' +
+  '3) GawaWeb - AI-powered website builder with a visual editor and AI chat; React/Vite front end, Node.js/Express backend, MongoDB Atlas; deployed on Vercel and Render. Solo project. ' +
   'Seminars: Learn AI and ChatGPT (DICT, 2026); Build Your Future with AI (PDM College of Computer Studies CSS, 2026); ' +
   'Git Happens (PDM CSS/CS Department, 2026). ' +
   'Certificates: Learn AI and ChatGPT: Practical Skills for Work and Everyday Productivity ' +
