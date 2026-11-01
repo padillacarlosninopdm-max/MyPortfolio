@@ -9,7 +9,7 @@ resume.html         A4 printable résumé (click "Print / Save as PDF")
 css/style.css       portfolio styles
 css/resume.css      résumé + print styles
 js/main.js          theme, nav, scroll effects, form
-assets/profile.png          hero portrait (framed card)
+assets/profile.jpg          hero portrait (framed card)
 assets/photo-512.jpg        circular crop (résumé)
 assets/photo-1024.jpg       circular crop (résumé, high-res)
 assets/solar-*.jpg          Project 01 screenshots (web)
@@ -41,16 +41,14 @@ then open <http://localhost:8000>.
 
 ## Your photo
 
-`assets/profile.png` is the **framed portrait** used in the hero (`.hero-photo`). The
-source is a studio print scan, so the file still carries a thin white margin; the card
-crops it by scaling the image slightly inside an `overflow: hidden` frame. The image has
-no transparency and sits on its own light backdrop — no cutout is needed.
+`assets/profile.jpg` is the **framed portrait** used in the hero (`.hero-photo`). The
+source has a plain white backdrop, so the card simply clips it to rounded corners inside
+an `overflow: hidden` frame. No transparency or cutout is needed.
 
-To swap in a new photo, replace `assets/profile.png` and update the `width`/`height`
+To swap in a new photo, replace `assets/profile.jpg` and update the `width`/`height`
 attributes on the hero `<img>` — they're only there to stop the page reflowing while the
 image loads, so wrong values cause a visible jump. If the new photo has a different
-aspect ratio, update `.hero-photo`'s `aspect-ratio` too (and its image `scale()` if the
-new file has a white border).
+aspect ratio, update `.hero-photo`'s `aspect-ratio` too.
 
 `assets/photo-512.jpg` is still used as the social preview (`og:image`).
 
