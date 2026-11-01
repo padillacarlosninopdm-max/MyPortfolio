@@ -10,15 +10,6 @@ var MODEL = 'qwen/qwen3.8-27b';
 /* Providers are tried in order: the first is primary, the rest are fallbacks.
    Keys live only in environment variables (Vercel), never in the repo. */
 var PROVIDERS = [];
-if (process.env.ITERACOMPUTE_API_KEY) {
-  PROVIDERS.push({
-    name: 'iteracompute',
-    url: 'https://api.iteracompute.com/v1/chat/completions',
-    model: MODEL,
-    apiKey: process.env.ITERACOMPUTE_API_KEY,
-    extra: { chat_template_kwargs: { enable_thinking: false } }
-  });
-}
 if (process.env.GROQ_API_KEY) {
   PROVIDERS.push({
     name: 'groq',
