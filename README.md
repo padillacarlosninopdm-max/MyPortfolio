@@ -41,14 +41,13 @@ then open <http://localhost:8000>.
 
 ## Your photo
 
-`assets/profile.jpg` is the **framed portrait** used in the hero (`.hero-photo`). The
-source has a plain white backdrop, so the card simply clips it to rounded corners inside
-an `overflow: hidden` frame. No transparency or cutout is needed.
+`assets/profile.jpg` is the **portrait** used in the hero (`.hero-photo`). It sits in a
+white picture-frame mat: white padding on the card, with a hairline border around the
+photo. No transparency or cutout is needed.
 
 To swap in a new photo, replace `assets/profile.jpg` and update the `width`/`height`
 attributes on the hero `<img>` — they're only there to stop the page reflowing while the
-image loads, so wrong values cause a visible jump. If the new photo has a different
-aspect ratio, update `.hero-photo`'s `aspect-ratio` too.
+image loads, so wrong values cause a visible jump.
 
 `assets/photo-512.jpg` is still used as the social preview (`og:image`).
 
@@ -185,9 +184,8 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
   `[data-theme="light"]`, flipped by the header toggle (`#themeToggle`) and remembered in
   `localStorage`. The résumé stays light on purpose, since a résumé has to print on white paper.
 - **Hero** layout: `Hello !` tag → "I'm" + your name in blue and underlined → role
-  headline → an intro card (`.hero-note`) → two buttons, with the framed portrait
-  (`.hero-photo`) on the right. The card's `aspect-ratio` and the image `scale()` crop the
-  source photo's white print margin.
+  headline → an intro card (`.hero-note`) → two buttons, with the portrait (`.hero-photo`)
+  in a white picture frame on the right.
 - **Palette:** navy `#1e40af` primary, amber `#f59e0b` accent (a nod to the solar work),
   ink `#14181f`. Swap them in the `:root` block at the top of `css/style.css`.
 - **Fonts** are Sora (headings), Inter (body), JetBrains Mono (skill chips) from Google
