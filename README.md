@@ -9,7 +9,7 @@ resume.html         A4 printable résumé (click "Print / Save as PDF")
 css/style.css       portfolio styles
 css/resume.css      résumé + print styles
 js/main.js          theme, nav, scroll effects, form
-assets/cutout.png           transparent hero cutout (remove.bg export)
+assets/profile.png          hero portrait (framed card)
 assets/photo-512.jpg        circular crop (résumé)
 assets/photo-1024.jpg       circular crop (résumé, high-res)
 assets/solar-*.jpg          Project 01 screenshots (web)
@@ -17,7 +17,7 @@ assets/app-*.jpg            Project 02 screenshots (mobile)
 assets/rent-*.jpg           Project 03 screenshots (Rentahanan)
 assets/cert-*.svg           certificate placeholders
 assets/favicon.svg
-profileojt.png      your remove.bg cutout, kept as the source for assets/cutout.png
+profileojt.png      previous hero cutout, kept as a source image
 web solaris\        original web screenshots (1080p, kept as sources)
 apk solaris\        original app screenshots (1080p, kept as sources)
 rentahanan\        original Rentahanan screenshots (~690px, kept as sources)
@@ -41,28 +41,18 @@ then open <http://localhost:8000>.
 
 ## Your photo
 
-`assets/cutout.png` is the **transparent-background cutout** used in the hero, sitting on
-a gradient arch shape (`.figure-blob`). It came from your
-remove.bg export — saved in the project folder as `profileojt.png`, 452×552, 32-bit ARGB.
+`assets/profile.png` is the **framed portrait** used in the hero (`.hero-photo`). The
+source is a studio print scan, so the file still carries a thin white margin; the card
+crops it by scaling the image slightly inside an `overflow: hidden` frame. The image has
+no transparency and sits on its own light backdrop — no cutout is needed.
 
-**Use a real cutout, not the white-background original.** The hero has a solid shape
-directly behind the figure, so any background that survives shows up as a coloured patch
-at the neck and collar. That is exactly what happened with a white-background version.
-
-An earlier attempt at generating the cutout automatically (flood fill from the image
-border, de-fringe, then close interior channels) was abandoned. The white shirt measures
-the same white as the backdrop, so only connectivity separates them, and the photo has a
-genuine strip of backdrop between the neck and the collar that has to be closed. Widening
-the close to catch it also painted over the legitimate background pockets between the
-head and the shoulders, leaving pale vertical strips and a smeared shirt. remove.bg
-handles all of that correctly — no need to re-derive it.
-
-`assets/photo-512.jpg` and `assets/photo-1024.jpg` are separate circular crops used only
-by the résumé (a printed résumé wants the white background, not a cutout).
-
-To swap in a new photo, replace `assets/cutout.png` and update the `width`/`height`
+To swap in a new photo, replace `assets/profile.png` and update the `width`/`height`
 attributes on the hero `<img>` — they're only there to stop the page reflowing while the
-image loads, so wrong values cause a visible jump.
+image loads, so wrong values cause a visible jump. If the new photo has a different
+aspect ratio, update `.hero-photo`'s `aspect-ratio` too (and its image `scale()` if the
+new file has a white border).
+
+`assets/photo-512.jpg` is still used as the social preview (`og:image`).
 
 ---
 
@@ -196,11 +186,10 @@ already sets `@page { margin: 0 }`), and enable **Background graphics**.
 - **Dark by default, with a light theme** — dark tokens live in `:root`, light tokens in
   `[data-theme="light"]`, flipped by the header toggle (`#themeToggle`) and remembered in
   `localStorage`. The résumé stays light on purpose, since a résumé has to print on white paper.
-- **Hero** follows a cutout-portfolio layout: `Hello !` tag → "I'm" + your name in blue and
-  underlined → role headline → an intro card (`.hero-note`) → two buttons, with your cutout
-  on a gradient arch. `.hero-figure` holds the cutout and `.figure-blob` is the shape behind
-  it — nudge that shape's `top` / `width` / `aspect-ratio` if you swap in a photo with a
-  different pose.
+- **Hero** layout: `Hello !` tag → "I'm" + your name in blue and underlined → role
+  headline → an intro card (`.hero-note`) → two buttons, with the framed portrait
+  (`.hero-photo`) on the right. The card's `aspect-ratio` and the image `scale()` crop the
+  source photo's white print margin.
 - **Palette:** navy `#1e40af` primary, amber `#f59e0b` accent (a nod to the solar work),
   ink `#14181f`. Swap them in the `:root` block at the top of `css/style.css`.
 - **Fonts** are Sora (headings), Inter (body), JetBrains Mono (skill chips) from Google

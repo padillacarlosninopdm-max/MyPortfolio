@@ -351,7 +351,7 @@ a.btn-pending { pointer-events: none; }
 .hero-meta span { display: inline-flex; align-items: center; gap: 7px; }
 .hero-meta svg { width: 15px; height: 15px; color: var(--primary); flex: none; }
 
-/* --- Cutout figure --- */
+/* --- Hero portrait --- */
 .hero-figure {
   position: relative;
   display: grid;
@@ -359,29 +359,26 @@ a.btn-pending { pointer-events: none; }
   min-height: 440px;
 }
 
-/* Backdrop shape behind the cutout. An arch - rounded top, flat bottom - frames
-   a standing figure far better than a circle, and reads more editorial.
-   This only works because the background is properly removed (remove.bg); a
-   white-backed original would show a white box in here. */
-.figure-blob {
-  position: absolute;
-  width: 70%;
-  aspect-ratio: 1 / 1.3;
-  left: 50%;
-  top: 44%;
-  transform: translate(-50%, -50%) rotate(-3deg);
-  background: linear-gradient(165deg, var(--primary), var(--primary-700));
-  border-radius: 50% 50% 16px 16px / 42% 42% 16px 16px;
-  z-index: 0;
+/* Portrait card. The source photo is a print scan with a thin white margin, so
+   the image is scaled slightly inside the overflow-hidden frame to crop it. */
+.hero-photo {
+  position: relative;
+  width: min(100%, 380px);
+  aspect-ratio: 1051 / 1398;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  background: var(--surface);
 }
 
-.hero-figure img {
-  position: relative;
-  z-index: 1;
+.hero-photo img {
+  display: block;
   width: 100%;
-  max-width: 400px;
-  height: auto;
-  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.45));
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  transform-origin: center;
 }
 
 /* Short about-me paragraph in the hero. */
@@ -403,7 +400,7 @@ a.btn-pending { pointer-events: none; }
   .hero-cta, .hero-meta { justify-content: center; }
   .hero-role { margin-inline: auto; }
   .hero-figure { min-height: 360px; order: -1; }
-  .hero-figure img { max-width: 300px; }
+  .hero-photo { width: min(100%, 300px); }
 
 }
 
@@ -1248,8 +1245,9 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 /* ---------- Light theme component overrides ----------
    Only for the handful of spots that hard-code dark colours instead of
    reading tokens. Everything else re-themes through the tokens above. */
-[data-theme="light"] .hero-figure img {
-  filter: drop-shadow(0 24px 30px rgba(15, 23, 42, 0.22));
+[data-theme="light"] .hero-photo {
+  border-color: #cfd9e8;
+  box-shadow: 0 26px 44px -22px rgba(15, 23, 42, 0.35);
 }
 [data-theme="light"] .btn-primary,
 [data-theme="light"] .to-top { color: #fff; }
