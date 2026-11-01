@@ -22,9 +22,8 @@
     var stored = localStorage.getItem('theme');
     if (stored === 'light' || stored === 'dark') {
       theme = stored;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      theme = 'light';
     }
+    // Dark mode is the default; do not follow the OS light preference.
   } catch (e) { /* private mode: stay dark */ }
   document.documentElement.setAttribute('data-theme', theme);
   var meta = document.querySelector('meta[name="theme-color"]');
@@ -312,22 +311,11 @@
             Node.js, Express, and MongoDB backend with REST API.
           </p>
 
-          <div class="stack">
-            <span class="chip">React</span>
-            <span class="chip">JavaScript</span>
-            <span class="chip">Node.js</span>
-            <span class="chip">Express.js</span>
-            <span class="chip">MongoDB</span>
-            <span class="chip">REST API</span>
-            <span class="chip">PayMongo</span>
-            <span class="chip">Flutter</span>
-            <span class="chip">Dart</span>
-          </div>
 
           <div class="project-links">
             <a class="btn btn-ghost btn-sm" href="https://www.solarisiot.com/" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
-              Live Demo
+              Live Site
             </a>
           </div>
         </div>
@@ -393,17 +381,11 @@
             a reliable experience for landlords and tenants.
           </p>
 
-          <div class="stack">
-            <span class="chip">React</span>
-            <span class="chip">SQLAlchemy</span>
-            <span class="chip">MySQL</span>
-            <span class="chip">REST API</span>
-          </div>
 
           <div class="project-links">
             <a class="btn btn-ghost btn-sm" href="https://rentahanan.vercel.app/" target="_blank" rel="noopener">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
-              Live Demo
+              Live Site
             </a>
           </div>
         </div>
@@ -411,72 +393,66 @@
 
       <!-- ---------- PROJECT 3: Celevation ---------- -->
       <article class="project project-featured reveal" id="project-3">
-        <div class="showcase" role="group" aria-label="Celevation, three screenshots">
+        <div class="showcase" role="group" aria-label="GawaWeb, three screenshots">
           <figure class="shot shot-left">
             <div class="shot-frame">
               <span class="shot-chrome" aria-hidden="true">
                 <i></i><i></i><i></i>
-                <b>celevation/about</b>
+                <b>gawaweb/editor</b>
               </span>
-              <img src="celevation/Screenshot 2026-10-03 211301.png" loading="lazy"
-                   alt="Celevation About page showing the company mission and vision">
+              <img src="assets/gawaweb-1.jpg" loading="lazy"
+                   alt="GawaWeb visual editor showing a selected element and the inspector panel">
             </div>
-            <figcaption>About</figcaption>
+            <figcaption>Editor</figcaption>
           </figure>
 
           <figure class="shot shot-center">
             <div class="shot-frame">
               <span class="shot-chrome" aria-hidden="true">
                 <i></i><i></i><i></i>
-                <b>celevation/packages</b>
+                <b>gawaweb/login</b>
               </span>
-              <img src="celevation/Screenshot 2026-10-03 211323.png" loading="lazy"
-                   alt="Celevation birthday packages showing package options and add-ons">
+              <img src="assets/gawaweb-3.jpg" loading="lazy"
+                   alt="GawaWeb login screen">
             </div>
-            <figcaption>Event Packages</figcaption>
+            <figcaption>Login</figcaption>
           </figure>
 
           <figure class="shot shot-right">
             <div class="shot-frame">
               <span class="shot-chrome" aria-hidden="true">
                 <i></i><i></i><i></i>
-                <b>celevation/events</b>
+                <b>gawaweb/chat</b>
               </span>
-              <img src="celevation/Screenshot 2026-10-03 211341.png" loading="lazy"
-                   alt="Celevation personal events showing birthdays, reunions, weddings, and engagement parties">
+              <img src="assets/gawaweb-2.jpg" loading="lazy"
+                   alt="GawaWeb AI chat with a selected element and the composer">
             </div>
-            <figcaption>Event Types</figcaption>
+            <figcaption>AI chat</figcaption>
           </figure>
         </div>
 
         <div class="project-body">
           <div class="project-head">
             <span class="project-num">03</span>
-            <h3>Celevation: Elevating Event Management Operation</h3>
-            <span class="project-kind">LAN System</span>
+            <h3>GawaWeb — AI Website Builder</h3>
+            <span class="project-kind">Web Application</span>
           </div>
 
           <p>
-            A LAN-based event management system built to elevate event planning and execution
-            for local provinces, designed to manage event records, inventory, personnel, venues,
-            and scheduling through role-based access and easy navigation. This system combines
-            customer and event detailing with package and add-on selection, food and inventory
-            tracking, cost calculation, and employee and event record management on a C# WinForms
-            and MySQL platform to deliver organized planning and accurate budgeting, offering an
-            efficient operation for organizers and staff.
+            An AI-powered website builder where a customer describes what they want in plain
+            words and gets a live preview in minutes. The generated site can then be edited by
+            hand — text, images, colors, buttons, sections — or improved further through an
+            AI chat, including parts that only appear when something is pressed (mobile menus,
+            pop-ups). Built static and fast: no templates, no bloat, deployed to a live URL.
+            Includes a visual editor, AI chat with web search and image search, and a
+            bring-your-own-key setup for the AI provider.
           </p>
 
-          <div class="stack">
-            <span class="chip">C#</span>
-            <span class="chip">WinForms</span>
-            <span class="chip">Visual Studio IDE</span>
-            <span class="chip">MySQL</span>
-          </div>
 
           <div class="project-links">
-            <a class="btn btn-ghost btn-sm" href="https://drive.google.com/drive/u/1/folders/1CYiB7_a2TsedhZ7j4CcRfsceLS-q9A96" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-              Download
+            <a class="btn btn-ghost btn-sm" href="https://gawaweb.onrender.com" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+              Live site
             </a>
           </div>
         </div>

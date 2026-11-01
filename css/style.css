@@ -1042,6 +1042,8 @@ a.contact-item:hover { transform: translateY(-2px); border-color: var(--primary)
 .showcase .shot + .shot   { margin-left: -70px; }
 .showcase .shot-center    { margin-left: -40px; }
 
+
+
 /* Hover brings a card forward and straightens it */
 .shot:hover { z-index: 6; }
 .shot:hover .shot-frame {
