@@ -30,7 +30,8 @@ body {
   background: #eceff4;
   color: var(--ink);
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 10.5pt;
+  /* One layout for both screen and print so the web preview matches the PDF. */
+  font-size: 9.5pt;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   /* Never allow horizontal scroll — whole page width must fit on open */
@@ -64,7 +65,7 @@ h1, h2, h3 {
   max-width: 100%;
   min-height: 297mm;
   margin: 24px auto;
-  padding: 14mm 15mm;
+  padding: 9.5mm 12.5mm;
   background: #fff;
   box-shadow: 0 10px 40px -12px rgba(10, 15, 28, 0.35);
   overflow-x: hidden;
@@ -78,8 +79,8 @@ img, svg { max-width: 100%; }
 .masthead {
   display: flex;
   align-items: center;
-  gap: 7mm;
-  padding-bottom: 5mm;
+  gap: 6mm;
+  padding-bottom: 3mm;
   border-bottom: 2.5px solid var(--ink);
 }
 .masthead img {
@@ -95,9 +96,9 @@ img, svg { max-width: 100%; }
   text-align: center;
 }
 .masthead-centered .contact { justify-content: center; }
-.masthead h1 { font-size: 22pt; font-weight: 800; letter-spacing: -0.02em; }
+.masthead h1 { font-size: 20pt; font-weight: 800; letter-spacing: -0.02em; }
 .masthead .contact {
-  margin-top: 3mm;
+  margin-top: 2mm;
   display: flex;
   flex-wrap: wrap;
   gap: 1.2mm 5mm;
@@ -118,7 +119,7 @@ img, svg { max-width: 100%; }
 .masthead .contact svg { width: 3.4mm; height: 3.4mm; color: var(--primary); flex: none; }
 
 /* ---------- Sections ---------- */
-section { margin-top: 6mm; break-inside: avoid; }
+section { margin-top: 4.4mm; break-inside: avoid; }
 section.break { break-inside: auto; }
 
 h2.section-title {
@@ -127,12 +128,12 @@ h2.section-title {
   text-transform: uppercase;
   letter-spacing: 0.13em;
   color: var(--primary);
-  padding-bottom: 1.4mm;
+  padding-bottom: 1.2mm;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 3mm;
+  margin-bottom: 2mm;
 }
 
-p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
+p { margin: 0 0 2.2mm; color: var(--ink-soft); text-align: justify; }
 
 /* ---------- Education ---------- */
 .edu { display: grid; gap: 3mm; }
@@ -143,22 +144,22 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
 .edu-item .degree { color: var(--ink-soft); font-size: 9.4pt; }
 
 /* ---------- Skills ---------- */
-.skill-line { display: grid; grid-template-columns: 34mm minmax(0, 1fr); gap: 4mm; margin-bottom: 1.6mm; font-size: 9.6pt; }
+.skill-line { display: grid; grid-template-columns: 34mm minmax(0, 1fr); gap: 4mm; margin-bottom: 1mm; font-size: 9.6pt; }
 .skill-line > *, .edu-item > *, .job-head > * { min-width: 0; max-width: 100%; }
 .skill-line b { color: var(--ink); font-weight: 600; }
 .skill-line span { color: var(--ink-soft); }
 .skill-line .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 9pt; }
 
 /* ---------- Projects ---------- */
-.job { margin-bottom: 4mm; break-inside: avoid; }
+.job { margin-bottom: 2.4mm; break-inside: avoid; }
 .job:last-child { margin-bottom: 0; }
 .job-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; }
-.job-head b { font-size: 10.4pt; }
+.job-head b { font-size: 10pt; }
 .job-head .kind { font-size: 8.6pt; color: var(--ink-mute); font-weight: 600; white-space: nowrap; }
-.job ul { margin: 1.4mm 0 0; padding-left: 4.4mm; }
-.job li { margin-bottom: 1.1mm; color: var(--ink-soft); font-size: 9.4pt; text-align: justify; }
+.job ul { margin: 1.1mm 0 0; padding-left: 4.4mm; }
+.job li { margin-bottom: 0.7mm; color: var(--ink-soft); font-size: 9.4pt; text-align: justify; }
 .job li b { color: var(--ink); }
-.job .stack { margin-top: 1.4mm; font-size: 8.8pt; color: var(--ink-mute); }
+.job .stack { margin-top: 1.1mm; font-size: 8.8pt; color: var(--ink-mute); }
 .job .stack b { color: var(--ink-soft); font-weight: 600; }
 
 /* ---------- Lists ---------- */
@@ -168,7 +169,7 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
   gap: 1.6mm 8mm;
 }
 .tick-list { list-style: none; margin: 0; padding: 0; font-size: 9.4pt; color: var(--ink-soft); text-align: justify; }
-.tick-list li { padding-left: 4.6mm; position: relative; margin-bottom: 1.1mm; }
+.tick-list li { padding-left: 4.6mm; position: relative; margin-bottom: 0.7mm; }
 .tick-list li::before {
   content: "";
   position: absolute;
@@ -234,14 +235,14 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
   border-radius: 50%;
 }
 
-@media (max-width: 220mm) {
+@media screen and (max-width: 220mm) {
   /* Keep the A4 bond-paper look on small screens — no full-width reflow.
      The zoom rules below scale the whole sheet so its full width fits. */
   .page {
     width: 210mm;
     max-width: none;
     margin: 16px auto;
-    padding: 14mm 15mm;
+    padding: 9.5mm 12.5mm;
     box-shadow: 0 10px 40px -12px rgba(10, 15, 28, 0.35);
   }
 }
@@ -249,11 +250,10 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
 /* ---------- Mobile paper preview: scale whole bond paper to fit width ----------
    Pagbukas sa phone kita agad buong lapad ng papel (gray paligid visible),
    tapos pwede mag-pinch-zoom para basahin. Toolbar hindi kasama sa zoom. */
-@media (max-width: 800px) { .page { zoom: 0.92; } }
-@media (max-width: 700px) { .page { zoom: 0.8; } }
-@media (max-width: 600px) {
+@media screen and (max-width: 800px) { .page { zoom: 0.92; } }
+@media screen and (max-width: 700px) { .page { zoom: 0.8; } }
+@media screen and (max-width: 600px) {
   body {
-    font-size: 10pt;
     padding: 0 12px 16px;
     overflow-x: auto;
   }
@@ -261,7 +261,7 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
     width: 210mm;
     max-width: none;
     margin: 12px auto;
-    padding: 14mm 15mm;
+    padding: 9.5mm 12.5mm;
     box-shadow: 0 10px 40px -12px rgba(10, 15, 28, 0.35);
     /* 481px min sa range na ito: (481-24)/794 = 0.57 para may left/right gap */
     zoom: 0.57;
@@ -297,7 +297,7 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
     height: 32px;
   }
   /* Loob ng papel same as desktop — huwag i-stack para mukhang bond paper pa rin */
-  .masthead h1 { font-size: 22pt; }
+  .masthead h1 { font-size: 20pt; }
   .masthead .contact { font-size: 8.6pt; }
   .job-head { flex-direction: row; }
   .job-head .kind { white-space: nowrap; }
@@ -305,52 +305,39 @@ p { margin: 0 0 2.4mm; color: var(--ink-soft); text-align: justify; }
 
 /* Mas maliit na phone = mas maliit na zoom para kasya pa rin buong lapad
    + may gray gap sa gilid. Formula: zoom = (viewport - 24px) / 794px */
-@media (max-width: 480px) { .page { zoom: 0.47; } }
-@media (max-width: 400px) { .page { zoom: 0.40; } }
-@media (max-width: 340px) { .page { zoom: 0.33; } }
+@media screen and (max-width: 480px) { .page { zoom: 0.47; } }
+@media screen and (max-width: 400px) { .page { zoom: 0.40; } }
+@media screen and (max-width: 340px) { .page { zoom: 0.33; } }
 
-@media (max-width: 420px) {
+@media screen and (max-width: 420px) {
   body { padding: 0 12px 14px; }
   .page {
     width: 210mm;
     max-width: none;
-    padding: 14mm 15mm;
+    padding: 9.5mm 12.5mm;
   }
-  .masthead h1 { font-size: 22pt; }
+  .masthead h1 { font-size: 20pt; }
   .toolbar { gap: 5px; padding: 8px 6px; flex-wrap: nowrap; }
   .toolbar button,
   .toolbar a { padding: 7px 10px; font-size: 0.7rem; }
   .toolbar-back { padding: 7px; width: 30px; height: 30px; margin-right: auto; }
 }
 
-/* ---------- Print ---------- */
+/* ---------- Print ----------
+   The screen rules ARE the print layout: the preview on the website and the
+   printed/saved PDF come out of the same spacing, so what you see is what
+   the recruiter downloads. Only truly print-only differences live below. */
 @page { size: A4; margin: 0; }
 
 @media print {
-  body { background: #fff; font-size: 9.5pt; }
+  body { background: #fff; }
   .toolbar { display: none !important; }
   .page {
     width: auto;
     min-height: 0;
     margin: 0;
-    padding: 9mm 11mm;
     box-shadow: none;
   }
-  .masthead { padding-bottom: 3mm; gap: 5mm; }
-  .masthead h1 { font-size: 20pt; }
-  .masthead .contact { margin-top: 2mm; }
-  section { margin-top: 3.5mm; }
-  h2.section-title { margin-bottom: 2mm; padding-bottom: 1mm; }
-  p { margin: 0 0 1.6mm; }
-  .skill-line { margin-bottom: 1mm; }
-  .job { margin-bottom: 2.2mm; }
-  .job ul { margin: 1mm 0 0; }
-  .job li { margin-bottom: 0.6mm; font-size: 9pt; }
-  .job .stack { margin-top: 1mm; }
-  .tick-list li { margin-bottom: 0.6mm; }
-  .footer-note { margin-top: 3mm; padding-top: 2mm; }
-  .job-head b { font-size: 9.6pt; }
-  .job-head { gap: 3mm; }
   .ph {
     background: transparent !important;
     border-bottom: 1px dashed #999 !important;
